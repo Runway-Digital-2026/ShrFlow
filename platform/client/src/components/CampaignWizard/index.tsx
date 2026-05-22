@@ -28,13 +28,19 @@ const steps = [
 
 const STORAGE_KEY = "campaign_local_sessions";
 
-type ContentMode = 'compose' | 'template';
-
 const defaultData = {
+    // Campaign meta
     name: "", subject: "", listId: "", listName: "",
-    templateId: "", templateName: "", htmlContent: "",
-    bodyText: "", contentMode: "compose", scheduledAt: null, attachments: [],
-    from_name: "", from_prefix: "", domain_id: "", domain_name: ""
+    scheduledAt: null, attachments: [],
+    from_name: "", from_prefix: "", domain_id: "", domain_name: "",
+    // Unified email content layers
+    intro: "",
+    templateId: "",
+    templateName: "",
+    templateSnapshot: "",   // frozen HTML at time of template selection
+    outro: "",
+    // Final assembled HTML (computed by buildFinalHTML, sent to API)
+    htmlContent: "",
 };
 
 interface Props {
@@ -98,25 +104,42 @@ export default function CampaignWizard({ editCampaignId, draftCampaignId }: Prop
                 const data = await res.json();
                 const campaign = data.campaign || data;
 
-                let text = campaign.body_html || "";
-                let mode: ContentMode = "compose";
+                const rawHtml = campaign.body_html || "";
 
-                // If it looks like our compose wrapper, strip it back to plain text
-                if (text.startsWith('<div style="font-family:sans-serif;')) {
-                    text = text.replace(/^<div[^>]*>/i, '').replace(/<\/div>$/i, '');
-                    text = text.replace(/<br\s*\/?>/gi, '\n');
-                } else if (text.includes('<html') || text.includes('<table')) {
-                    // It's a full HTML template
-                    mode = "template";
+                // Migration: if saved body_html looks like a plain-text compose
+                // wrapper, extract the text and put it in `intro`.
+                // If it's a full HTML template, treat as templateSnapshot.
+                let intro = "";
+                let templateSnapshot = "";
+                let templateId = "";
+                let templateName = "";
+
+                if (rawHtml.startsWith('<div style="font-family:sans-serif;')) {
+                    // Old compose-mode body — migrate into intro
+                    intro = rawHtml
+                        .replace(/^<div[^>]*>/i, '')
+                        .replace(/<\/div>$/i, '')
+                        .replace(/<br\s*\/?>/gi, '\n');
+                } else if (rawHtml.includes('<html') || rawHtml.includes('<table')) {
+                    // Old template-mode body — treat as snapshot
+                    templateSnapshot = rawHtml;
+                    templateId = campaign.template_id || "migrated";
+                    templateName = campaign.template_name || "Saved Template";
+                } else if (rawHtml) {
+                    // Anything else goes into intro
+                    intro = rawHtml;
                 }
 
                 setCampaignData((prev: any) => ({
                     ...prev,
                     name: campaign.name || "",
                     subject: campaign.subject || "",
-                    htmlContent: campaign.body_html || "",
-                    bodyText: text,
-                    contentMode: mode,
+                    htmlContent: rawHtml,
+                    intro,
+                    templateSnapshot,
+                    templateId,
+                    templateName,
+                    outro: "",
                     from_name: campaign.from_name || "",
                     from_prefix: campaign.from_prefix || "",
                     domain_id: campaign.domain_id || "",
