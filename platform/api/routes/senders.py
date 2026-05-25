@@ -105,7 +105,7 @@ async def list_senders(
 
 # ─── Add New Sender → sends verification email via our SMTP ───────────────────
 @router.post("/")
-@limiter.limit("5/hour")
+@limiter.limit("50/hour")
 async def add_sender_identity(
     request: Request,
     body: AddSenderRequest, 
@@ -192,6 +192,7 @@ async def confirm_sender_token(token: str):
     Public endpoint — no auth needed. Called when the user clicks the verification
     link inside the email. Marks the sender as verified.
     """
+    res = db.client.table("sender_identities").select("*").eq("verification_token", token).execute()
     res_data = cast(List[Dict[str, Any]], res.data or [])
     if not res_data:
         raise HTTPException(status_code=404, detail="Invalid or expired verification token.")
@@ -247,6 +248,7 @@ async def resend_verification(
     jwt_payload: JWTPayload = Depends(require_permission("sender:manage"))
 ):
     """Resend the verification email with a fresh token."""
+    res = db.client.table("sender_identities").select("*").eq("id", sender_id).eq("tenant_id", tenant_id).execute()
     res_data = cast(List[Dict[str, Any]], res.data or [])
     if not res_data:
         raise HTTPException(status_code=404, detail="Sender not found")
@@ -277,6 +279,7 @@ async def delete_sender(
     jwt_payload: JWTPayload = Depends(require_permission("sender:manage"))
 ):
     """Delete sender identity from DB."""
+    res = db.client.table("sender_identities").select("*").eq("id", sender_id).eq("tenant_id", tenant_id).execute()
     res_data = cast(List[Dict[str, Any]], res.data or [])
     if not res_data:
         raise HTTPException(status_code=404, detail="Sender not found")

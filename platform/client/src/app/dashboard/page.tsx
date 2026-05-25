@@ -119,6 +119,7 @@ export default function DashboardPage() {
     const [senders, setSenders] = useState<any[]>([]);
     const [contactsCount, setContactsCount] = useState(0);
     const [campaignsCount, setCampaignsCount] = useState(0);
+    const [activity7d, setActivity7d] = useState<any[]>([]);
     const [isOnboardingCompleted, setIsOnboardingCompleted] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -135,6 +136,12 @@ export default function DashboardPage() {
             headers: { Authorization: `Bearer ${token}` },
         }).then((r) => (r.ok ? r.json() : null)).then((data) => {
             if (data) setBilling(data);
+        }).catch(() => { });
+
+        fetch(`${API_BASE}/analytics/activity-7d`, {
+            headers: { Authorization: `Bearer ${token}` },
+        }).then((r) => (r.ok ? r.json() : null)).then((data) => {
+            if (data && data.activity) setActivity7d(data.activity);
         }).catch(() => { });
 
         const cacheKey = `onboarding_status_${token.substring(0, 10)}`;
@@ -201,6 +208,12 @@ export default function DashboardPage() {
         if (!limit || limit === 0) return false;
         return (used / limit) >= 0.8;
     }, [billing]);
+
+    const maxActivity = useMemo(() => {
+        if (!activity7d || activity7d.length === 0) return 1;
+        const max = Math.max(...activity7d.map((d: any) => d.count));
+        return max === 0 ? 1 : max;
+    }, [activity7d]);
 
     const recommendedActions = useMemo(() => {
         const actions = [];
@@ -383,21 +396,42 @@ export default function DashboardPage() {
                                     </Link>
                                 ))}
                                 
-                                {/* Placeholder for Data Visualization Feel (e.g. mini chart) */}
+                                {/* Real-time Data Visualization: Activity 7d */}
                                 <div className="mt-2 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/30 p-5 h-[140px] flex flex-col justify-between">
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Activity 7d</span>
                                         <Activity className="h-3 w-3 text-[var(--text-muted)]" />
                                     </div>
-                                    <div className="flex items-end gap-1.5 h-16 w-full opacity-60">
-                                        {/* Skeleton bar chart */}
-                                        <div className="bg-[var(--accent)]/40 w-full rounded-t-sm h-[30%]" />
-                                        <div className="bg-[var(--accent)]/40 w-full rounded-t-sm h-[50%]" />
-                                        <div className="bg-[var(--accent)]/40 w-full rounded-t-sm h-[20%]" />
-                                        <div className="bg-[var(--accent)]/40 w-full rounded-t-sm h-[80%]" />
-                                        <div className="bg-[var(--accent)]/60 w-full rounded-t-sm h-[60%]" />
-                                        <div className="bg-[var(--accent)] w-full rounded-t-sm h-[90%]" />
-                                        <div className="bg-[var(--accent)] w-full rounded-t-sm h-[70%]" />
+                                    <div className="flex items-end gap-1.5 h-16 w-full opacity-90">
+                                        {activity7d && activity7d.length > 0 ? (
+                                            activity7d.map((day: any, idx: number) => {
+                                                const pct = (day.count / maxActivity) * 100;
+                                                const heightStyle = day.count > 0 ? `${Math.max(pct, 8)}%` : '4%';
+                                                return (
+                                                    <div
+                                                        key={idx}
+                                                        className="bg-[var(--accent)] hover:bg-[var(--accent)]/80 w-full rounded-t-sm transition-all duration-300 relative group/bar cursor-pointer"
+                                                        style={{ height: heightStyle }}
+                                                    >
+                                                        {/* Interactive premium hover tooltip */}
+                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/bar:block bg-[var(--bg-card)] border border-[var(--border)] text-[9px] font-bold uppercase tracking-wider rounded px-2 py-1 text-[var(--text-primary)] whitespace-nowrap z-30 shadow-md">
+                                                            {day.day_name}: {day.count} sent
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            /* Skeleton bar chart */
+                                            <>
+                                                <div className="bg-[var(--accent)]/40 w-full rounded-t-sm h-[30%]" />
+                                                <div className="bg-[var(--accent)]/40 w-full rounded-t-sm h-[50%]" />
+                                                <div className="bg-[var(--accent)]/40 w-full rounded-t-sm h-[20%]" />
+                                                <div className="bg-[var(--accent)]/40 w-full rounded-t-sm h-[80%]" />
+                                                <div className="bg-[var(--accent)]/60 w-full rounded-t-sm h-[60%]" />
+                                                <div className="bg-[var(--accent)] w-full rounded-t-sm h-[90%]" />
+                                                <div className="bg-[var(--accent)] w-full rounded-t-sm h-[70%]" />
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>

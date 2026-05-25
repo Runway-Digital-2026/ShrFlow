@@ -103,6 +103,8 @@ def _record_event(
     user_agent: str,
     source: str,
     is_bot: bool,
+    click_x: Optional[int] = None,
+    click_y: Optional[int] = None,
 ) -> None:
     """Fire-and-forget: record tracking event in email_events table."""
     try:
@@ -169,6 +171,8 @@ def _record_event(
             "user_agent":  user_agent,
             "is_bot":      is_bot,
             "source":      source,
+            "click_x":     click_x,
+            "click_y":     click_y,
         }).execute()
 
         logger.info(f"[TRACK] {event_type} | dispatch={dispatch_id} | bot={is_bot}")
@@ -255,6 +259,31 @@ async def track_click(
     else:
         source, is_bot = _classify_source(user_agent, ip, honeypot=bool(hp), rapid_click=rapid_click)
 
-    _record_event(d, "click", destination, ip, user_agent, source, is_bot)
+    # Parse coordinates from query string (e.g. ?123,456 or &x=123&y=456)
+    import re
+    query_str = request.url.query
+    click_x = None
+    click_y = None
+    
+    # Check for "x,y" pattern at the end of query string, e.g. ?123,456 or &123,456
+    match = re.search(r'(?:\?|&|,|^)(\d+),(\d+)(?:$|&)', query_str)
+    if match:
+        try:
+            click_x = int(match.group(1))
+            click_y = int(match.group(2))
+        except ValueError:
+            pass
+    else:
+        # Check if standard x and y parameters are passed
+        x_param = request.query_params.get("x")
+        y_param = request.query_params.get("y")
+        if x_param and y_param:
+            try:
+                click_x = int(x_param)
+                click_y = int(y_param)
+            except ValueError:
+                pass
+
+    _record_event(d, "click", destination, ip, user_agent, source, is_bot, click_x=click_x, click_y=click_y)
 
     return RedirectResponse(url=destination, status_code=302)
