@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+// React must be explicitly imported for the IDE TypeScript server to resolve JSX types.
 import { 
     ChevronLeft, Share2, Shapes, Search, Sparkles, Plus, Mic, Layout, ChevronDown, Minus,
     Facebook, Instagram, Twitter, Linkedin, Youtube, MessageCircle, Type, Image as ImageIcon, 
@@ -43,6 +44,82 @@ interface SecondaryDrawerProps {
     applyBrandToDesign: () => void;
     onUseBrandComponent: (comp: any) => void;
 }
+
+interface TokenItem {
+    label: string;
+    token: string;
+    display: string;
+    fallback: string;
+}
+
+const TokenButton = ({ t }: { t: TokenItem; key?: string }) => {
+    const [copied, setCopied] = React.useState(false);
+    return (
+        <button
+            key={t.display}
+            // ─── KEY FIX ───────────────────────────────────────────────
+            // onMouseDown + preventDefault keeps focus on the canvas
+            // contentEditable — if we used onClick, the blur fires first
+            // and document.activeElement is already this button by then.
+            onMouseDown={(e) => {
+                e.preventDefault(); // 🔑 don't steal focus from canvas
+
+                // Save current selection so we can restore it after
+                const sel = window.getSelection();
+                const savedRange = sel && sel.rangeCount > 0
+                    ? sel.getRangeAt(0).cloneRange()
+                    : null;
+
+                const active = document.activeElement as HTMLElement;
+                if (active && active.isContentEditable) {
+                    // Restore selection if needed and insert
+                    if (savedRange && sel) {
+                        sel.removeAllRanges();
+                        sel.addRange(savedRange);
+                    }
+                    document.execCommand("insertText", false, t.token);
+                } else {
+                    // No text block focused — copy to clipboard
+                    navigator.clipboard.writeText(t.token).then(() => {
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 1800);
+                    });
+                }
+            }}
+            style={{
+                padding: "10px 14px", background: copied ? "#F0FDF4" : "#fff",
+                borderRadius: 10,
+                border: `1px solid ${copied ? "#86EFAC" : "#E2E8F0"}`,
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                cursor: "pointer", transition: "all 0.18s", textAlign: "left", width: "100%"
+            }}
+            onMouseEnter={e => { if (!copied) { e.currentTarget.style.borderColor = "#6366F1"; e.currentTarget.style.background = "#FAFAFE"; } }}
+            onMouseLeave={e => { if (!copied) { e.currentTarget.style.borderColor = "#E2E8F0"; e.currentTarget.style.background = "#fff"; } }}
+        >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{
+                    width: 28, height: 28, borderRadius: 7,
+                    background: copied ? "linear-gradient(135deg, #DCFCE7, #BBF7D0)" : "linear-gradient(135deg, #EEF2FF, #E0E7FF)",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+                }}>
+                    <Tag size={13} color={copied ? "#16A34A" : "#6366F1"} />
+                </div>
+                <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#1E293B" }}>{t.label}</div>
+                    <div style={{ fontSize: 10, color: "#94A3B8", marginTop: 1 }}>
+                        {copied ? "Copied to clipboard!" : `fallback → ${t.fallback}`}
+                    </div>
+                </div>
+            </div>
+            <code style={{
+                fontSize: 10, background: copied ? "#DCFCE7" : "#EEF2FF",
+                padding: "3px 7px", borderRadius: 5,
+                color: copied ? "#16A34A" : "#6366F1",
+                fontFamily: "monospace", flexShrink: 0
+            }}>{t.display}</code>
+        </button>
+    );
+};
 
 export const SecondaryDrawer = ({
     activeSidebarTab, setActiveSidebarTab, sidebarWidth, activeSubMenu, setActiveSubMenu,
@@ -302,19 +379,20 @@ export const SecondaryDrawer = ({
                                         </>
                                     )}
                                     {(selectedCategory === "headers" ? HEADER_TEMPLATES : (selectedCategory === "footers" ? FOOTER_TEMPLATES : [])).map((temp, i) => (
-                                        <DraggableItem 
-                                            key={i}
-                                            type={temp.type as any}
-                                            label={temp.name}
-                                            icon={selectedCategory === "headers" ? <LayoutTemplate size={20} /> : <Minus size={20} />}
-                                            props={temp.props}
-                                            restriction={selectedCategory}
-                                            onClick={() => onAddBlock(
-                                                selectedCategory === "headers" ? "header" : "footer",
-                                                temp.type,
-                                                temp.props
-                                            )}
-                                        />
+                                        <React.Fragment key={i}>
+                                            <DraggableItem 
+                                                type={temp.type as any}
+                                                label={temp.name}
+                                                icon={selectedCategory === "headers" ? <LayoutTemplate size={20} /> : <Minus size={20} />}
+                                                props={temp.props}
+                                                restriction={selectedCategory}
+                                                onClick={() => onAddBlock(
+                                                    selectedCategory === "headers" ? "header" : "footer",
+                                                    temp.type,
+                                                    temp.props
+                                                )}
+                                            />
+                                        </React.Fragment>
                                     ))}
                                     {selectedCategory === "images" && (
                                         <>
@@ -423,44 +501,60 @@ export const SecondaryDrawer = ({
                 {/* --- TOKENS TAB --- */}
                 {activeSidebarTab === "tokens" && (
                     <div style={{ animation: "fadeSlideUp 0.2s ease-out" }}>
-                        <h3 style={{ fontSize: 16, fontWeight: 700, color: "#18191B", marginBottom: 8 }}>Personalization</h3>
-                        <p style={{ fontSize: 13, color: "#64748B", marginBottom: 20 }}>Click a tag to insert it at your cursor position inside a text block.</p>
-                        
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        <h3 style={{ fontSize: 16, fontWeight: 700, color: "#18191B", marginBottom: 4 }}>Personalization</h3>
+                        <p style={{ fontSize: 13, color: "#64748B", marginBottom: 16 }}>
+                            Click a tag while editing a text block to insert it at your cursor.
+                        </p>
+
+                        {/* Live badge */}
+                        <div style={{
+                            display: "flex", alignItems: "center", gap: 6,
+                            background: "#F0FDF4", border: "1px solid #BBF7D0",
+                            borderRadius: 8, padding: "8px 12px", marginBottom: 20
+                        }}>
+                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E", flexShrink: 0 }} />
+                            <span style={{ fontSize: 12, color: "#15803D", fontWeight: 600 }}>
+                                All tags below are actively processed by the mailer engine
+                            </span>
+                        </div>
+
+                        {/* Contact identity tags */}
+                        <div style={{ fontSize: 11, fontWeight: 800, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+                            Contact Fields
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
                             {[
-                                { label: "First Name", token: "{{first_name}}" },
-                                { label: "Last Name", token: "{{last_name}}" },
-                                { label: "Email Address", token: "{{email}}" },
-                                { label: "City", token: "{{city}}" },
-                                { label: "Company", token: "{{company}}" },
-                                { label: "Unsubscribe Link", token: "{{unsubscribe_url}}" }
+                                { label: "First Name",  token: '{{first_name || "there"}}',           display: "{{first_name}}", fallback: '"there"' },
+                                { label: "Last Name",   token: '{{last_name || "Customer"}}',          display: "{{last_name}}",  fallback: '"Customer"' },
+                                { label: "Full Name",   token: '{{full_name || "Valued Customer"}}',   display: "{{full_name}}",  fallback: '"Valued Customer"' },
+                                { label: "Email",       token: '{{email || "Subscriber"}}',            display: "{{email}}",      fallback: '"Subscriber"' },
                             ].map(t => (
-                                <button
-                                    key={t.token}
-                                    onClick={() => {
-                                        // Insert at cursor in active contentEditable, else copy to clipboard
-                                        const active = document.activeElement as HTMLElement;
-                                        if (active && active.isContentEditable) {
-                                            document.execCommand("insertText", false, t.token);
-                                        } else {
-                                            navigator.clipboard.writeText(t.token);
-                                        }
-                                    }}
-                                    style={{
-                                        padding: "12px 16px", background: "#fff", borderRadius: 8, border: "1px solid #E2E8F0",
-                                        display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
-                                        transition: "all 0.2s"
-                                    }}
-                                    onMouseEnter={e => e.currentTarget.style.borderColor = "#6366F1"}
-                                    onMouseLeave={e => e.currentTarget.style.borderColor = "#E2E8F0"}
-                                >
-                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                        <Tag size={14} color="#64748B" />
-                                        <span style={{ fontSize: 13, fontWeight: 600, color: "#1E293B" }}>{t.label}</span>
-                                    </div>
-                                    <code style={{ fontSize: 11, background: "#F1F5F9", padding: "2px 6px", borderRadius: 4, color: "#6366F1" }}>{t.token}</code>
-                                </button>
+                                <TokenButton key={t.display} t={t} />
                             ))}
+                        </div>
+
+                        {/* Tip */}
+                        <div style={{
+                            display: "flex", alignItems: "flex-start", gap: 8,
+                            padding: "10px 12px", background: "#EFF6FF",
+                            border: "1px solid #BFDBFE", borderRadius: 8, marginBottom: 12
+                        }}>
+                            <Tag size={13} color="#3B82F6" style={{ flexShrink: 0, marginTop: 1 }} />
+                            <p style={{ fontSize: 11, color: "#1E40AF", margin: 0, lineHeight: 1.5 }}>
+                                <strong>Tip:</strong> Click a text block first to focus it, then click a tag to insert it at your cursor position.
+                            </p>
+                        </div>
+
+                        {/* Footer hint */}
+                        <div style={{
+                            display: "flex", alignItems: "flex-start", gap: 8,
+                            padding: "10px 12px", background: "#FFF7ED",
+                            border: "1px solid #FED7AA", borderRadius: 8
+                        }}>
+                            <Tag size={13} color="#EA580C" style={{ flexShrink: 0, marginTop: 1 }} />
+                            <p style={{ fontSize: 11, color: "#9A3412", margin: 0, lineHeight: 1.5 }}>
+                                Each tag includes a <strong>fallback</strong> — if the field is empty for a contact, the fallback text is used so no recipient sees a blank value.
+                            </p>
                         </div>
                     </div>
                 )}

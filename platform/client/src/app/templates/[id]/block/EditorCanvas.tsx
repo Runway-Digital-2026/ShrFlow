@@ -323,7 +323,7 @@ function FloatingToolbar({ block, onUpdate, position, onDuplicate, onDelete }: {
                         input.onchange = async (e: any) => {
                             const file = e.target.files[0];
                             if (file) {
-                                const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+                                const API = (process as any).env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
                                 const token = localStorage.getItem("token");
                                 
                                 const formData = new FormData();
@@ -645,6 +645,7 @@ export function EditableBlock({
 
     return (
         <div
+            data-block-id={block.id}
             draggable={canDrag && !isResizingTop && !isResizingBottom && !isResizingLeft && !isResizingRight}
             onDragStart={(e) => {
                 if (zone === "header") e.dataTransfer.setData("x-restriction/headers", "true");
@@ -982,21 +983,21 @@ export default function EditorCanvas({
                 }}
                 onDragOver={e => {
                     e.preventDefault();
-                    const zoneNodes = Array.from(e.currentTarget.querySelectorAll('[data-zone]'));
+                    const zoneNodes = Array.from(e.currentTarget.querySelectorAll('[data-zone]')) as Element[];
                     let targetZone: any = "body";
                     for (const node of zoneNodes) {
-                        const rect = node.getBoundingClientRect();
-                        if (e.clientY >= rect.top && e.clientY <= rect.bottom) { targetZone = node.getAttribute('data-zone'); break; }
+                        const rect = (node as Element).getBoundingClientRect();
+                        if (e.clientY >= rect.top && e.clientY <= rect.bottom) { targetZone = (node as Element).getAttribute('data-zone'); break; }
                     }
                     if (e.dataTransfer.types.includes("x-restriction/headers") && targetZone !== "header") { setDropIndicator(null); return; }
                     if (e.dataTransfer.types.includes("x-restriction/footers") && targetZone !== "footer") { setDropIndicator(null); return; }
                     
                     const targetNode = e.currentTarget.querySelector(`[data-zone="${targetZone}"]`);
                     if (targetNode) {
-                        const others = Array.from(targetNode.querySelectorAll('[data-block-id]')).filter(n => n.getAttribute('data-block-id') !== draggedBlockId.current?.id);
+                        const others = (Array.from(targetNode.querySelectorAll('[data-block-id]')) as Element[]).filter(n => (n as Element).getAttribute('data-block-id') !== draggedBlockId.current?.id);
                         let idx = others.length;
                         for (let i = 0; i < others.length; i++) {
-                            const rect = others[i].getBoundingClientRect();
+                            const rect = (others[i] as Element).getBoundingClientRect();
                             if (e.clientY < (rect.top + rect.bottom) / 2) { idx = i; break; }
                         }
                         setDropIndicator({ zone: targetZone, index: idx, y: 0 });
