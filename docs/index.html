@@ -7,6 +7,7 @@
   <meta name="description" content="ShrFlow — self-hosted, multi-tenant, high-performance email marketing platform documentation.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <link rel="icon" href="assets/shrflow-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -88,6 +89,7 @@ body::before{
   box-shadow:none !important;
   padding:0 !important;
   display:flex;flex-direction:column;
+  width:var(--sidebar-w) !important;
 }
 
 /* Brand */
@@ -161,6 +163,9 @@ body::before{
 
 /* Nav */
 .sidebar-nav{padding:8px 0 48px !important;overflow-y:auto;flex:1}
+.sidebar ul{
+  margin:0 !important;
+}
 .sidebar-nav>ul>li>p,
 .sidebar-nav>ul>li>strong{
   display:block !important;
@@ -224,9 +229,8 @@ body::before{
 
 /* ─── CONTENT ─────────────────────────────────────────────── */
 .markdown-section{
-  max-width:980px !important;
-  width:100% !important;
-  padding:56px 0 96px !important;
+  max-width:920px !important;
+  padding:56px 48px 96px !important;
   margin:0 auto !important;
   animation:fadeUp .25s var(--ease) both;
 }
@@ -236,12 +240,9 @@ body::before{
 }
 
 .content{
-  padding:0 clamp(24px,4vw,48px) 0 clamp(28px,4vw,42px) !important;
-}
-
-.content-inner{
-  max-width:1160px !important;
-  margin:0 auto !important;
+  left:var(--sidebar-w) !important;
+  right:0 !important;
+  padding:0 !important;
 }
 
 .markdown-section > :first-child{
@@ -659,8 +660,12 @@ body::before{
 
 /* ─── MOBILE ──────────────────────────────────────────────── */
 @media(max-width:768px){
-  .content{padding:0 16px !important}
-  .content-inner{width:100% !important}
+  .sidebar{
+    width:300px !important;
+  }
+  .content{
+    left:0 !important;
+  }
   .markdown-section{padding:28px 20px 64px !important}
   .markdown-section h1{font-size:1.55rem !important}
   .hero{padding:36px 20px 32px !important}
