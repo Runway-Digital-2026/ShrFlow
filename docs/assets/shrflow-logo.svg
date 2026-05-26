@@ -1,0 +1,19 @@
+<svg viewBox="0 0 100 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Base Blue Infinity Loop -->
+    <path
+        d="M 12.5 25 C 12.5 37.5, 37.5 37.5, 50 25 C 62.5 12.5, 87.5 12.5, 87.5 25 C 87.5 37.5, 62.5 37.5, 50 25 C 37.5 12.5, 12.5 12.5, 12.5 25 Z"
+        stroke="#2558d9"
+        stroke-width="12"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    />
+    <!-- Symmetrical Green Crossover Diagonal Overlay (starts at bottom-left, crosses top-right) -->
+    <path
+        d="M 12.5 25 C 12.5 37.5, 37.5 37.5, 50 25 C 62.5 12.5, 87.5 12.5, 87.5 25 C 87.5 37.5, 62.5 37.5, 50 25 C 37.5 12.5, 12.5 12.5, 12.5 25 Z"
+        stroke="#10b981"
+        stroke-width="12"
+        stroke-linecap="butt"
+        stroke-dasharray="42.5 200"
+        stroke-dashoffset="-21.25"
+    />
+</svg>
