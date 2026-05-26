@@ -720,12 +720,6 @@ body::before{
         nextText:     'Next →',
         crossChapter: false,
       },
-      mermaidConfig: {
-        startOnLoad: true,
-        theme: 'default',
-        securityLevel: 'loose'
-      },
-
       plugins: [
         function(hook) {
           function normalizeHomeRoute() {
@@ -808,6 +802,24 @@ body::before{
           });
         },
 
+        /* ── Mermaid diagrams ── */
+        function(hook) {
+          hook.beforeEach(function(markdown) {
+            return markdown.replace(/```mermaid\s*([\s\S]*?)```/g, function(_, diagram) {
+              return '\n<div class="mermaid">' + diagram.trim() + '</div>\n';
+            });
+          });
+
+          hook.doneEach(function() {
+            if (!window.mermaid) return;
+            requestAnimationFrame(function() {
+              window.mermaid.run({
+                querySelector: '.mermaid'
+              });
+            });
+          });
+        },
+
         /* ── Back to top ── */
         function(hook) {
           hook.doneEach(function() {
@@ -841,8 +853,11 @@ body::before{
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docsify-mermaid@2/dist/docsify-mermaid.js"></script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+    window.mermaid = mermaid;
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
