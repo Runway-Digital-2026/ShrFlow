@@ -11,8 +11,8 @@ This visual tour is organized by workflow so you can understand the product the 
 
 <div class="tour-grid">
   <div class="tour-card">
-    <a class="tour-thumb" href="landing-page.png" target="_blank" rel="noopener">
-      <img src="landing-page.png" alt="Marketing landing page" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/landing-page.png" target="_blank" rel="noopener">
+      <img src="screen-shots/landing-page.png" alt="Marketing landing page" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Marketing Landing Page</div>
@@ -21,8 +21,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="signup.png" target="_blank" rel="noopener">
-      <img src="signup.png" alt="User signup screen" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/signup.png" target="_blank" rel="noopener">
+      <img src="screen-shots/signup.png" alt="User signup screen" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Signup & Onboarding Entry</div>
@@ -36,8 +36,8 @@ This visual tour is organized by workflow so you can understand the product the 
 
 <div class="tour-grid">
   <div class="tour-card">
-    <a class="tour-thumb" href="dashboard.png" target="_blank" rel="noopener">
-      <img src="dashboard.png" alt="Workspace dashboard" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/dashboard.png" target="_blank" rel="noopener">
+      <img src="screen-shots/dashboard.png" alt="Workspace dashboard" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Dashboard</div>
@@ -46,8 +46,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="contacts-import-history.png" target="_blank" rel="noopener">
-      <img src="contacts-import-history.png" alt="Contacts import history" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/contacts-import-history.png" target="_blank" rel="noopener">
+      <img src="screen-shots/contacts-import-history.png" alt="Contacts import history" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Audience Import History</div>
@@ -56,8 +56,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="templates-list.png" target="_blank" rel="noopener">
-      <img src="templates-list.png" alt="Templates library" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/templates-list.png" target="_blank" rel="noopener">
+      <img src="screen-shots/templates-list.png" alt="Templates library" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Templates Library</div>
@@ -66,8 +66,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="campaigns-list.png" target="_blank" rel="noopener">
-      <img src="campaigns-list.png" alt="Campaign list" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/campaigns-list.png" target="_blank" rel="noopener">
+      <img src="screen-shots/campaigns-list.png" alt="Campaign list" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Campaigns List</div>
@@ -76,8 +76,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="analytics.png" target="_blank" rel="noopener">
-      <img src="analytics.png" alt="Analytics page" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/analytics.png" target="_blank" rel="noopener">
+      <img src="screen-shots/analytics.png" alt="Analytics page" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Analytics</div>
@@ -86,8 +86,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="infrastructure.png" target="_blank" rel="noopener">
-      <img src="infrastructure.png" alt="Infrastructure status page" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/infrastructure.png" target="_blank" rel="noopener">
+      <img src="screen-shots/infrastructure.png" alt="Infrastructure status page" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Infrastructure Status</div>
@@ -101,8 +101,8 @@ This visual tour is organized by workflow so you can understand the product the 
 
 <div class="tour-grid">
   <div class="tour-card">
-    <a class="tour-thumb" href="settings-general.png" target="_blank" rel="noopener">
-      <img src="settings-general.png" alt="General settings" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/settings-general.png" target="_blank" rel="noopener">
+      <img src="screen-shots/settings-general.png" alt="General settings" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">General Settings</div>
@@ -111,8 +111,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="settings-organization.png" target="_blank" rel="noopener">
-      <img src="settings-organization.png" alt="Organization settings" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/settings-organization.png" target="_blank" rel="noopener">
+      <img src="screen-shots/settings-organization.png" alt="Organization settings" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Organization Settings</div>
@@ -121,8 +121,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="settings-team.png" target="_blank" rel="noopener">
-      <img src="settings-team.png" alt="Team management settings" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/settings-team.png" target="_blank" rel="noopener">
+      <img src="screen-shots/settings-team.png" alt="Team management settings" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Team Management</div>
@@ -131,8 +131,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="settings-franchise.png" target="_blank" rel="noopener">
-      <img src="settings-franchise.png" alt="Franchise settings" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/settings-franchise.png" target="_blank" rel="noopener">
+      <img src="screen-shots/settings-franchise.png" alt="Franchise settings" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Franchise Accounts</div>
@@ -141,8 +141,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="settings-requests.png" target="_blank" rel="noopener">
-      <img src="settings-requests.png" alt="Workspace requests settings" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/settings-requests.png" target="_blank" rel="noopener">
+      <img src="screen-shots/settings-requests.png" alt="Workspace requests settings" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Workspace Requests</div>
@@ -151,8 +151,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="settings-billing.png" target="_blank" rel="noopener">
-      <img src="settings-billing.png" alt="Billing settings" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/settings-billing.png" target="_blank" rel="noopener">
+      <img src="screen-shots/settings-billing.png" alt="Billing settings" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Billing & Plan</div>
@@ -161,8 +161,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="settings-audit-history.png" target="_blank" rel="noopener">
-      <img src="settings-audit-history.png" alt="Audit history settings" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/settings-audit-history.png" target="_blank" rel="noopener">
+      <img src="screen-shots/settings-audit-history.png" alt="Audit history settings" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Audit History</div>
@@ -171,8 +171,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="settings-sending-domains.png" target="_blank" rel="noopener">
-      <img src="settings-sending-domains.png" alt="Sending domains settings" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/settings-sending-domains.png" target="_blank" rel="noopener">
+      <img src="screen-shots/settings-sending-domains.png" alt="Sending domains settings" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Sending Domains</div>
@@ -181,8 +181,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="settings-sender-identities.png" target="_blank" rel="noopener">
-      <img src="settings-sender-identities.png" alt="Sender identities settings" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/settings-sender-identities.png" target="_blank" rel="noopener">
+      <img src="screen-shots/settings-sender-identities.png" alt="Sender identities settings" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Sender Identities</div>
@@ -191,8 +191,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="settings-api-keys.png" target="_blank" rel="noopener">
-      <img src="settings-api-keys.png" alt="API keys settings" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/settings-api-keys.png" target="_blank" rel="noopener">
+      <img src="screen-shots/settings-api-keys.png" alt="API keys settings" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">API Keys</div>
@@ -206,8 +206,8 @@ This visual tour is organized by workflow so you can understand the product the 
 
 <div class="tour-grid">
   <div class="tour-card">
-    <a class="tour-thumb" href="account-center.png" target="_blank" rel="noopener">
-      <img src="account-center.png" alt="Account center" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/account-center.png" target="_blank" rel="noopener">
+      <img src="screen-shots/account-center.png" alt="Account center" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Workspace Selection Portal</div>
@@ -216,8 +216,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="account-personal-details.png" target="_blank" rel="noopener">
-      <img src="account-personal-details.png" alt="Personal profile settings" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/account-personal-details.png" target="_blank" rel="noopener">
+      <img src="screen-shots/account-personal-details.png" alt="Personal profile settings" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Personal Profile</div>
@@ -226,8 +226,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="account-security.png" target="_blank" rel="noopener">
-      <img src="account-security.png" alt="Security center" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/account-security.png" target="_blank" rel="noopener">
+      <img src="screen-shots/account-security.png" alt="Security center" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Security Center</div>
@@ -236,8 +236,8 @@ This visual tour is organized by workflow so you can understand the product the 
     </div>
   </div>
   <div class="tour-card">
-    <a class="tour-thumb" href="account-deletion-modal.png" target="_blank" rel="noopener">
-      <img src="account-deletion-modal.png" alt="Account deletion modal" loading="lazy" decoding="async">
+    <a class="tour-thumb" href="screen-shots/account-deletion-modal.png" target="_blank" rel="noopener">
+      <img src="screen-shots/account-deletion-modal.png" alt="Account deletion modal" loading="lazy" decoding="async">
     </a>
     <div class="tour-body">
       <div class="tour-title">Account Deletion Modal</div>
