@@ -1,0 +1,173 @@
+=== BROKEN IMAGE LINKS ===
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/landing-page.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/landing-page.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/signup.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/signup.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/onboarding-step-1.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/onboarding-step-1.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/onboarding-step-2.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/onboarding-step-2.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/onboarding-step-3.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/onboarding-step-3.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/onboarding-step-4.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/onboarding-step-4.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/onboarding-success.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/onboarding-success.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/dashboard.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/dashboard.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/dashboard-checklist.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/dashboard-checklist.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/contacts-import-step-1.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/contacts-import-step-1.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/contacts-import-step-2.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/contacts-import-step-2.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/contacts-import-step-3.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/contacts-import-step-3.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/contacts-import-step-4.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/contacts-import-step-4.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/contacts-import-history.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/contacts-import-history.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/contacts-import-history-errors.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/contacts-import-history-errors.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/contacts-suppression-list.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/contacts-suppression-list.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/templates-list.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/templates-list.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/campaigns-list.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/campaigns-list.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/analytics.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/analytics.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/infrastructure.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/infrastructure.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/settings-general.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/settings-general.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/settings-organization.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/settings-organization.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/settings-team.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/settings-team.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/settings-franchise.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/settings-franchise.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/settings-requests.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/settings-requests.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/settings-billing.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/settings-billing.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/settings-audit-history.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/settings-audit-history.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/settings-sending-domains.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/settings-sending-domains.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/settings-sending-domains-connect.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/settings-sending-domains-connect.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/settings-sender-identities.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/settings-sender-identities.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/settings-api-keys.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/settings-api-keys.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/account-center.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/account-center.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/account-personal-details.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/account-personal-details.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/account-security.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/account-security.png
+
+File: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/README.md
+  Refers to missing: screen-shots/account-deletion-modal.png
+  Resolved: /Users/rahul/Desktop/ShrFlow/docs/screen-shots/screen-shots/account-deletion-modal.png
+
+
+=== UNREFERENCED SCREENSHOTS IN docs/screen-shots/ ===
+Unreferenced: account-security.png
+Unreferenced: settings-franchise.png
+Unreferenced: contacts-suppression-list.png
+Unreferenced: settings-audit-history.png
+Unreferenced: settings-requests.png
+Unreferenced: settings-general.png
+Unreferenced: onboarding-step-3.png
+Unreferenced: landing-page.png
+Unreferenced: onboarding-step-2.png
+Unreferenced: settings-sending-domains-connect.png
+Unreferenced: onboarding-step-1.png
+Unreferenced: signup.png
+Unreferenced: onboarding-step-4.png
+Unreferenced: settings-api-keys.png
+Unreferenced: settings-billing.png
+Unreferenced: analytics.png
+Unreferenced: infrastructure.png
+Unreferenced: account-personal-details.png
+Unreferenced: settings-sender-identities.png
+Unreferenced: onboarding-success.png
+Unreferenced: contacts-import-step-1.png
+Unreferenced: contacts-import-step-3.png
+Unreferenced: settings-team.png
+Unreferenced: dashboard-checklist.png
+Unreferenced: account-center.png
+Unreferenced: contacts-import-step-2.png
+Unreferenced: settings-organization.png
+Unreferenced: account-deletion-modal.png
+Unreferenced: contacts-import-history-errors.png
+Unreferenced: contacts-import-step-4.png

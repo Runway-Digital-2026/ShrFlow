@@ -483,7 +483,7 @@ body::before{
   font-family:'Plus Jakarta Sans',sans-serif;
 }
 .btn-primary{
-  background:var(--accent);color:#fff;
+  background:var(--accent) !important;color:#fff !important;
   box-shadow:0 1px 3px var(--accent-ring),0 4px 14px var(--accent-ring);
 }
 .btn-primary:hover{
@@ -491,11 +491,11 @@ body::before{
   box-shadow:0 4px 16px var(--accent-ring);
 }
 .btn-outline{
-  background:var(--bg-card);color:var(--text);
+  background:var(--bg-card) !important;color:var(--text) !important;
   border:1.5px solid var(--border);
 }
 .btn-outline:hover{
-  border-color:var(--accent);color:var(--accent);transform:translateY(-2px);
+  border-color:var(--accent) !important;color:var(--accent) !important;transform:translateY(-2px);
 }
 .hero-pills{
   display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
