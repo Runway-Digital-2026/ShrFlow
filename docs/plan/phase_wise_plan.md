@@ -37,7 +37,7 @@ graph TD
     class User userNode;
     class App coreApp;
     
-    subgraph AppLogic [App Logic]
+    subgraph AppLogic["App Logic"]
         Auth[Auth & Core Logistics]
         Campaigns[Campaign Engine]
         App --> Auth
@@ -46,7 +46,7 @@ graph TD
         class Campaigns coreApp;
     end
 
-    subgraph DualProcessingQueues [Dual Processing Queues]
+    subgraph DualProcessingQueues["Dual Processing Queues"]
         SysQueue[(System Queue)]
         TenantQueue[(Campaign Queue)]
         Auth --> |"OTP, Invites, Password Resets"| SysQueue
@@ -62,7 +62,7 @@ graph TD
         class TenantWorker tenWorker;
     end
 
-    subgraph EmailDeliveryProviders [Email Delivery Providers]
+    subgraph EmailDeliveryProviders["Email Delivery Providers"]
         Gmail[Gmail SMTP]
         SES[AWS SES]
         SysWorker --> |"shrmail.app@gmail.com"| Gmail
@@ -114,7 +114,7 @@ graph TD
     classDef a11y fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef devtool fill:#64748b,stroke:#475569,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph TheDesignSystem [The Design System & Styling]
+    subgraph TheDesignSystem["The Design System & Styling"]
         Tokens[Global CSS Tokens]
         Tailwind[Tailwind Config Mapper]
         Theme[Dark/Light Mode Swapper]
@@ -125,7 +125,7 @@ graph TD
         class Theme foundation;
     end
 
-    subgraph ComponentLibrary [shadcn UI Component Library]
+    subgraph ComponentLibrary["shadcn UI Component Library"]
         Atoms[Atoms: Button, Badge, Toast, Spinner]
         Molecules[Molecules: StatCard, PageHeader, EmptyState]
         Organisms[Organisms: DataTable, ConfirmModal]
@@ -136,7 +136,7 @@ graph TD
         class Organisms component;
     end
 
-    subgraph AccessibilityLayer [Global Accessibility Specs]
+    subgraph AccessibilityLayer["Global Accessibility Specs"]
         Focus[Modal Focus Traps]
         Touch[44x44 Min Touch Targets]
         Aria[ARIA Icon Labels]
@@ -147,7 +147,7 @@ graph TD
         class Contrast a11y;
     end
 
-    subgraph LocalDeveloperTools [Local Dev Environment]
+    subgraph LocalDeveloperTools["Local Dev Environment"]
         Mailhog[Mailhog Docker / Email Catcher]
         Seeder[Python DB Seeder]
         Env[Standardized .env.example]
@@ -256,7 +256,7 @@ graph TD
     classDef security fill:#ef4444,stroke:#b91c1c,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph UserInterface [Frontend UX & Onboarding]
+    subgraph UserInterface["Frontend UX & Onboarding"]
         Login[Login & Signup Pages <br> w/ Google/GitHub OAuth]
         Wizard[Multi-Step Wizard <br> Workspace > Use-Case]
         DashboardShell[Dashboard Sidebar & Layout]
@@ -270,7 +270,7 @@ graph TD
         class Context frontend;
     end
 
-    subgraph SecurityMiddleware [Next.js & FastAPI Middleware]
+    subgraph SecurityMiddleware["Next.js & FastAPI Middleware"]
         RouteGuard[Next.js Route Protection Redirects]
         FastAPIGuard[FastAPI Active-Tenant Resolver]
         RateLimit[IP / Email Login Rate Limiter]
@@ -283,7 +283,7 @@ graph TD
         class RateLimit security;
     end
 
-    subgraph AuthEngine [Authentication & Tenancy API]
+    subgraph AuthEngine["Authentication & Tenancy API"]
         JWT[Custom JWT Issuer <br> Short-Lived Access]
         Revocation[Token Version Revocation]
         Bcrypt[Bcrypt Password Hashing]
@@ -295,7 +295,7 @@ graph TD
         class Bcrypt auth;
     end
 
-    subgraph TenantModel [Tenant Database Architecture]
+    subgraph TenantModel["Tenant Database Architecture"]
         Users[(Users Table)]
         Tenants[(Tenants Table)]
         TenantUsers[(Tenant_Users Join)]
@@ -643,7 +643,7 @@ graph TD
     class AIClient client;
     class MCPServer mcp;
 
-    subgraph MCPLayer [MCP Interface Layer]
+    subgraph MCPLayer["MCP Interface Layer"]
         Tools[MCP Tools: DB, Logs, Workers]
         Resources[MCP Resources: Docs, Plans]
         MCPServer --> Tools
@@ -652,7 +652,7 @@ graph TD
         class Resources mcp;
     end
 
-    subgraph AppInternal [App Internal Logic]
+    subgraph AppInternal["App Internal Logic"]
         DBLogic[Database / RLS Manager]
         LogLogic[Log Tailing Service]
         QueueLogic[RabbitMQ / Redis Monitor]
@@ -665,7 +665,7 @@ graph TD
         class QueueLogic logic;
     end
 
-    subgraph Persistence [Data & State]
+    subgraph Persistence["Data & State"]
         PG[(PostgreSQL / Supabase)]
         Redis[(Redis State)]
         Docs[(Project Roadmap)]
@@ -720,7 +720,7 @@ graph TD
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef storage fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph ContactsInterface [Frontend Contacts UI]
+    subgraph ContactsInterface["Frontend Contacts UI"]
         List[Contacts List & Search Grid]
         ImportModal[CSV / XLSX Import <br> Wizard & Mapper]
         WS[WebSocket Progress Listener]
@@ -732,7 +732,7 @@ graph TD
         class WS frontend;
     end
 
-    subgraph ContactsAPI [Contacts API Gateway]
+    subgraph ContactsAPI["Contacts API Gateway"]
         InitAPI[POST /import/initialize <br> Presigned URL Gen]
         ProcessAPI[POST /import/process <br> Queue Trigger]
         WSGW[WebSocket Gateway <br> Redis Sub]
@@ -747,7 +747,7 @@ graph TD
         class S3 storage;
     end
 
-    subgraph ImportWorker [RabbitMQ Data Worker]
+    subgraph ImportWorker["RabbitMQ Data Worker"]
         Chunker[Async Stream Parser <br> Chunksize=500]
         Validator[Audit & Validation Service]
         DLQ[RabbitMQ Dead-Letter Queue]
@@ -761,7 +761,7 @@ graph TD
         class DLQ worker;
     end
 
-    subgraph DataLayer [Contact Storage & Audit]
+    subgraph DataLayer["Contact Storage & Audit"]
         Contacts[(Contacts Table <br> Upsert Logic)]
         Rejections[(Import Rejected Rows <br> Failure Log)]
         Redis[(Redis Pub/Sub <br> Progress Events)]
@@ -900,7 +900,7 @@ graph TD
     classDef worker fill:#8b5cf6,stroke:#6d28d9,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph DesignStudio [Frontend Design Studio]
+    subgraph DesignStudio["Frontend Design Studio"]
         Sidebar[Elements & Templates Sidebar]
         Store[(Centralized Design Store <br> Zustand / Redux)]
         Canvas[Reactive Canvas Renderer]
@@ -912,7 +912,7 @@ graph TD
         class Canvas frontend;
     end
 
-    subgraph ProcessingLayer [Template Processing Engine]
+    subgraph ProcessingLayer["Template Processing Engine"]
         API[Template Service API]
         Compiler[MJML compiler <br> JSON > HTML]
         Validator[Layout Validation Service]
@@ -925,7 +925,7 @@ graph TD
         class Validator engine;
     end
 
-    subgraph AsyncOperations [Async Background Workers]
+    subgraph AsyncOperations["Async Background Workers"]
         Thumbnail[Thumbnail Worker <br> Puppeteer / Headless]
         Versioning[Version Snapshot Service]
         Assets[Asset Manager <br> S3 / CDN]
@@ -938,7 +938,7 @@ graph TD
         class Assets worker;
     end
 
-    subgraph PersistenceLayer [Storage]
+    subgraph PersistenceLayer["Storage"]
         DB[(PostgreSQL <br> design_json + HTML)]
         S3Storage[(S3 Object Storage)]
         
@@ -1000,7 +1000,7 @@ graph TD
     class Design output;
     class Gateway gateway;
 
-    subgraph IntegrityChecks [Data & Compliance Checks]
+    subgraph IntegrityChecks["Data & Compliance Checks"]
         Token[Token Resolver <br> Fallback Engine]
         Spam[Spam & Deliverability <br> Linter]
         A11y[Accessibility Engine <br> Contrast/Size]
@@ -1013,7 +1013,7 @@ graph TD
         class A11y engine;
     end
 
-    subgraph SimulationLayer [Rendering Sandbox]
+    subgraph SimulationLayer["Rendering Sandbox"]
         Mock[Mock Data Injector <br> Real Personas]
         Sandbox[Isolated MJML Sandbox]
         Mapper[Error-Block Mapper]
@@ -1026,7 +1026,7 @@ graph TD
         class Mapper sandbox;
     end
 
-    subgraph Certification [Output & Blocking]
+    subgraph Certification["Output & Blocking"]
         Report[Validation Report <br> Line-Level Errors]
         Hash([Validation Hash / Cert])
         
@@ -1121,7 +1121,7 @@ graph TD
     classDef background fill:#8b5cf6,stroke:#6d28d9,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph CampaignUI [Frontend Orchestration]
+    subgraph CampaignUI["Frontend Orchestration"]
         Wizard[Multi-Step Campaign Wizard]
         Checklist[Pre-Send Validation UI]
         Controls[Pause / Cancel Mid-Send]
@@ -1133,7 +1133,7 @@ graph TD
         class Controls frontend;
     end
 
-    subgraph CampaignAPI [Campaign Processing Logic]
+    subgraph CampaignAPI["Campaign Processing Logic"]
         Snapshot[HTML Template Snapshot Generator]
         Spintax[Spintax & Merge Tag Resolver]
         Rate[Throttling / Send Rate Limit Engine]
@@ -1146,7 +1146,7 @@ graph TD
         class Rate logic;
     end
 
-    subgraph ScheduledWorker [Background Schedulers]
+    subgraph ScheduledWorker["Background Schedulers"]
         Cron[Schedule Poller <br> 60s Check]
         DistLock[Redis Distributed Lock]
         
@@ -1156,7 +1156,7 @@ graph TD
         class DistLock background;
     end
 
-    subgraph CampaignData [Orchestration Storage]
+    subgraph CampaignData["Orchestration Storage"]
         Campaigns[(Campaign Metadata)]
         Intents[(Dispatch Intents <br> Per-Recipient Row)]
         
@@ -1257,7 +1257,7 @@ graph TD
     classDef api fill:#10b981,stroke:#047857,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph DispatchWorker [RabbitMQ Delivery Worker]
+    subgraph DispatchWorker["RabbitMQ Delivery Worker"]
         RMQ[(RabbitMQ Queue)]
         Injector[CAN-SPAM / HMAC Unsub Injector]
         SMTP[Dynamic TLS SMTP Sender]
@@ -1272,7 +1272,7 @@ graph TD
         class DLQ worker;
     end
 
-    subgraph ExternalProvider [Email Delivery Provider]
+    subgraph ExternalProvider["Email Delivery Provider"]
         SES[AWS SES / Mailtrap]
         Inbox[Recipient Inbox]
         
@@ -1282,7 +1282,7 @@ graph TD
         class Inbox external;
     end
 
-    subgraph FeedbackLoop [Webhook Resolution API]
+    subgraph FeedbackLoop["Webhook Resolution API"]
         Webhook[SES Complaint/Bounce Receiver]
         HardBounce[Hard Bounce Isolator]
         Spam[Spam Complaint Isolator]
@@ -1295,7 +1295,7 @@ graph TD
         class Spam api;
     end
 
-    subgraph ContactState [Contact Integrity DB]
+    subgraph ContactState["Contact Integrity DB"]
         Contacts[(Contacts Table)]
         Reputation[(Tenant Reputation <br> Warmup Stats)]
         
@@ -1460,14 +1460,14 @@ graph TD
     classDef frontend fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph RecipientAction [Client Behaviors]
+    subgraph RecipientAction["Client Behaviors"]
         EmailOpen[Client Dislays 1x1 Pixel]
         EmailClick[User Clicks Wrapped Link]
         class EmailOpen external;
         class EmailClick external;
     end
 
-    subgraph TrackingEngine [Telemetry Resolution API]
+    subgraph TrackingEngine["Telemetry Resolution API"]
         Pixel[HMAC Pixel Validator]
         LinkWrapper[Link Redirect Handler]
         Attribution[User-Agent Attribution <br> Apple MPP / Gmail Proxy]
@@ -1480,7 +1480,7 @@ graph TD
         class Attribution api;
     end
 
-    subgraph AnalyticsData [Event Fast-Storage Matrix]
+    subgraph AnalyticsData["Event Fast-Storage Matrix"]
         Events[(email_events Timeline)]
         TimeSeries[72h Rolling Aggregation]
         
@@ -1491,7 +1491,7 @@ graph TD
         class TimeSeries database;
     end
 
-    subgraph AnalyticsUI [Frontend Stat Reporting]
+    subgraph AnalyticsUI["Frontend Stat Reporting"]
         StatCards[CTR & Overview Stat Cards]
         Graphs[72H Time-Series Charts]
         Proxy[Proxy vs Human Traffic Ring]
@@ -1566,7 +1566,7 @@ graph TD
     classDef external fill:#ef4444,stroke:#b91c1c,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph BillingUI [Frontend Subscription UI]
+    subgraph BillingUI["Frontend Subscription UI"]
         PlanPage[Plan & Usage Dashboards]
         Banner[80% / 100% Limit Banners]
         Upgrade[Upgrade Modals / Blockers]
@@ -1578,7 +1578,7 @@ graph TD
         class Upgrade frontend;
     end
 
-    subgraph QuotaEngine [Enforcement API Logic]
+    subgraph QuotaEngine["Enforcement API Logic"]
         MonthCounter[Monthly Send Counter]
         Gate[Dispatch Block Interceptor]
         Overage[Overage Pricing Calculator]
@@ -1591,7 +1591,7 @@ graph TD
         class Overage logic;
     end
 
-    subgraph StripeIntegration [Stripe Billing Handlers]
+    subgraph StripeIntegration["Stripe Billing Handlers"]
         Webhook[Stripe Payment Webhooks]
         GracePeriod[7-Day Grace Degradation]
         
@@ -1600,7 +1600,7 @@ graph TD
         class GracePeriod external;
     end
 
-    subgraph BillingData [Subscription State DB]
+    subgraph BillingData["Subscription State DB"]
         Plans[(Plans Limits Matrix)]
         Tenants[(Tenant Billing State)]
         
@@ -1717,7 +1717,7 @@ graph TD
     classDef monitor fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef pipeline fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph ContainerOrchestration [Docker Deployment]
+    subgraph ContainerOrchestration["Docker Deployment"]
         Compose[docker-compose Framework]
         Nginx[Nginx Reverse Proxy]
         Services[FastAPI / Next.js / Worker Images]
@@ -1729,7 +1729,7 @@ graph TD
         class Services infra;
     end
 
-    subgraph CICDPipeline [Continuous Integration]
+    subgraph CICDPipeline["Continuous Integration"]
         GitHub[GitHub Actions]
         Tests[Test Suite & Linting Gate]
         Deploy[Auto-Build & Push to Prod]
@@ -1742,7 +1742,7 @@ graph TD
         class Deploy pipeline;
     end
 
-    subgraph SecurityDefense [Resilience & Stability]
+    subgraph SecurityDefense["Resilience & Stability"]
         SSL[Let's Encrypt Auto-TLS]
         Idempotent[external_msg_id De-duper]
         RateLimit[Tenant API DDoS Limiter]
@@ -1755,7 +1755,7 @@ graph TD
         class RateLimit security;
     end
 
-    subgraph ObservabilityLayer [DevOps Monitoring]
+    subgraph ObservabilityLayer["DevOps Monitoring"]
         Sentry[Sentry UI / API Crash Logs]
         ELK[Centralized Logs ELK/Loki]
         Backup[Daily pg_dump Backups + 30d]
@@ -2293,7 +2293,7 @@ graph TD
     classDef monitor fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph ComplianceUI [Domain & Legal Dashboard]
+    subgraph ComplianceUI["Domain & Legal Dashboard"]
         DNSView[DNS Setup Instructions <br> CNAME/TXT]
         IPView[Dedicated IP Assignment]
         ConsentView[Opt-in Consent Log Viewer]
@@ -2304,7 +2304,7 @@ graph TD
         class ConsentView frontend;
     end
 
-    subgraph InfrastructureLayer [Routing & Identity]
+    subgraph InfrastructureLayer["Routing & Identity"]
         DNSCRON[Automated DNS Verification CRON]
         IPRouter[Dedicated IP Allocation Engine]
         SNS[AWS SNS/SQS Bounce Queue]
@@ -2316,7 +2316,7 @@ graph TD
         class SNS infra;
     end
 
-    subgraph DataProtection [Backup Automation]
+    subgraph DataProtection["Backup Automation"]
         BackupCRON[Nightly pg_dump DB Extract]
         S3[AES-256 S3 Bucket Array]
         Lifecycle[30-Day Retention Policy]
@@ -2328,7 +2328,7 @@ graph TD
         class Lifecycle monitor;
     end
 
-    subgraph TrustData [Verification Datastores]
+    subgraph TrustData["Verification Datastores"]
         Domains[(Verified Domains DB)]
         Consent[(Compliance/Consent Logs)]
         
@@ -2407,7 +2407,7 @@ graph TD
     classDef logic fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph IntelligenceUI [Advanced Tenant Interfaces]
+    subgraph IntelligenceUI["Advanced Tenant Interfaces"]
         ChatWidget[Floating AI Chat Assistant]
         DripCanvas[Visual Drip Workflow Builder]
         ABSplit[A/B Variant Creation Matrix]
@@ -2419,7 +2419,7 @@ graph TD
         class ABSplit frontend;
     end
 
-    subgraph DripEngine [Advanced Logic Core]
+    subgraph DripEngine["Advanced Logic Core"]
         StateMachine[Chronological Drip State Machine]
         STOptimizer[Send-Time Optimization Logic]
         WinnerBot[A/B Autonomous Winner Selector]
@@ -2432,7 +2432,7 @@ graph TD
         class WinnerBot logic;
     end
 
-    subgraph RAGOrchestration [AI Inference Pipeline]
+    subgraph RAGOrchestration["AI Inference Pipeline"]
         Langchain[LangChain / LlamaIndex Orchestrator]
         Embeddings[Realtime Embedding Model]
         ContextBuilder[Cosine Similarity Context Ingestion]
@@ -2445,7 +2445,7 @@ graph TD
         class ContextBuilder ai;
     end
 
-    subgraph KnowledgeData [Vector Datastore]
+    subgraph KnowledgeData["Vector Datastore"]
         TenantSets[(Tenant Campaign Datasets)]
         pgvector[(pgvector / Pinecone <br> High-Dimensional Array)]
         
@@ -2523,7 +2523,7 @@ graph TD
     classDef external fill:#ef4444,stroke:#b91c1c,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph PortalUI [External Integrator Facing]
+    subgraph PortalUI["External Integrator Facing"]
         OpenAPI[Interactive Swagger OpenAPI Docs]
         WebhookUI[Event Subscription Manager]
         DevDash[API Consumption Dash]
@@ -2535,7 +2535,7 @@ graph TD
         class DevDash frontend;
     end
 
-    subgraph HeadlessAPI [Inbound Transactional API]
+    subgraph HeadlessAPI["Inbound Transactional API"]
         RESTAPI[/v1/send Protected Endpoint/]
         PayloadValidation[JSON Schema Payload Validator]
         AuthCache[API Key Redis Validation]
@@ -2548,7 +2548,7 @@ graph TD
         class AuthCache api;
     end
 
-    subgraph WebhookDispatcher [Outbound Event Engine]
+    subgraph WebhookDispatcher["Outbound Event Engine"]
         EventTracker[Open / Bounce Listener]
         Retrier[Exponential Backoff Retrier]
         PayloadBuilder[System-to-Tenant Webhook Dispatcher]
@@ -2560,7 +2560,7 @@ graph TD
         class PayloadBuilder api;
     end
 
-    subgraph ExternalClients [Tenant Systems]
+    subgraph ExternalClients["Tenant Systems"]
         CRM[External Hubspot / Salesforce]
         CustomApp[Tenant Custom Codebases]
         Endpoints[(Tenant Webhook Subscriptions)]
@@ -2613,7 +2613,7 @@ graph TD
     classDef security fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph EnterpriseUI [Corporate End-User Interfaces]
+    subgraph EnterpriseUI["Corporate End-User Interfaces"]
         Onboard[Signup Interceptor]
         WaitRoom[Employee Waiting Room UI]
         AdminGov[IT Governance Approval Portal]
@@ -2625,7 +2625,7 @@ graph TD
         class AdminGov frontend;
     end
 
-    subgraph JITDiscovery [Just-In-Time Provisioning API]
+    subgraph JITDiscovery["Just-In-Time Provisioning API"]
         PDEP[Public Domain Exclusion <br> Gmail/Yahoo Drop]
         VBD[Verification-Before-Disclosure <br> OTP Recon Shield]
         Matcher[Corporate Domain Correlator]
@@ -2638,7 +2638,7 @@ graph TD
         class Matcher logic;
     end
 
-    subgraph SSOIntegration [Active Directory Auth]
+    subgraph SSOIntegration["Active Directory Auth"]
         SAML[SAML/LDAP Corporate Bridge]
         RBAC[Automatic Role Assigner]
         
@@ -2649,7 +2649,7 @@ graph TD
         class RBAC security;
     end
 
-    subgraph IdentityStorage [Enterprise Boundary State]
+    subgraph IdentityStorage["Enterprise Boundary State"]
         Tenants[(Workspace/Tenant Boundaries)]
         SSOMeta[(SAML Configurations)]
         
@@ -2701,7 +2701,7 @@ graph TD
     classDef external fill:#ef4444,stroke:#b91c1c,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
     classDef database fill:#475569,stroke:#334155,stroke-width:2px,color:#fff,font-weight:bold,rx:5px,ry:5px;
 
-    subgraph APIGateway [Nginx/Kong Routing]
+    subgraph APIGateway["Nginx/Kong Routing"]
         Gateway[Central Reverse Proxy]
         Degraded[Conditional Degradation Rules]
         
@@ -2710,7 +2710,7 @@ graph TD
         class Degraded external;
     end
 
-    subgraph MicroserviceCluster [Decoupled Domain APIs]
+    subgraph MicroserviceCluster["Decoupled Domain APIs"]
         AuthAPI[Authentication Container]
         ContactAPI[Contacts & Segments Container]
         RenderAPI[Template MJML Container]
@@ -2726,7 +2726,7 @@ graph TD
         class AnalyticsAPI api;
     end
 
-    subgraph AsynchronousBackplane [Redis/RabbitMQ Bus]
+    subgraph AsynchronousBackplane["Redis/RabbitMQ Bus"]
         Redis[Redis In-Memory Cache/Locks]
         RabbitMQ[Cross-Service Message Bus]
         
@@ -2736,7 +2736,7 @@ graph TD
         class RabbitMQ worker;
     end
 
-    subgraph DatabasePartitioning [Scale-Out Storage]
+    subgraph DatabasePartitioning["Scale-Out Storage"]
         AuthDB[(Auth & Roles PostgreSQL)]
         Lake[(ClickHouse / TimescaleDB <br> Event Analytics)]
         
