@@ -360,6 +360,13 @@ export default function ContactsPage() {
     const [jobProgress, setJobProgress] = useState<{ id: string; progress: number; status: string; processed_items: number; total_items: number; failed_items: number } | null>(null);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const contactsAbortRef = useRef<AbortController | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const handleLabelKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            fileInputRef.current?.click();
+        }
+    };
     const domainsAbortRef = useRef<AbortController | null>(null);
     const batchesAbortRef = useRef<AbortController | null>(null);
 
@@ -1369,7 +1376,7 @@ export default function ContactsPage() {
                                         </td>
                                         <td className="px-3 py-3">
                                             <div className="flex flex-col gap-1">
-                                                <Link href={`/contacts/${c.id}`} className="font-semibold text-[var(--accent)] no-underline">
+                                                <Link href={`/contacts/${c.id}`} className="font-semibold text-[var(--accent)] underline hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">
                                                     {c.email}
                                                 </Link>
                                                 <div className="flex flex-wrap items-center gap-2">
@@ -1796,7 +1803,12 @@ export default function ContactsPage() {
                         {uploadStep === 1 && !validationResult && (
                             <div>
                                 {!file ? (
-                                    <label htmlFor="file-upload" className="flex cursor-pointer flex-col items-center justify-center rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--border)] bg-[var(--bg-primary)] p-10 text-center transition hover:border-[var(--accent-border)]"
+                                    <label 
+                                        htmlFor="file-upload" 
+                                        tabIndex={0}
+                                        onKeyDown={handleLabelKeyDown}
+                                        aria-label="Upload contact list file"
+                                        className="flex cursor-pointer flex-col items-center justify-center rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--border)] bg-[var(--bg-primary)] p-10 text-center transition hover:border-[var(--accent-border)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:outline-none"
                                         onDragOver={(e) => e.preventDefault()}
                                         onDrop={(e) => { e.preventDefault(); if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]); }}
                                     >
@@ -1805,7 +1817,7 @@ export default function ContactsPage() {
                                             {isValidating ? "Validating plan limits..." : uploading ? "Parsing file..." : "Click to upload or drag and drop"}
                                         </p>
                                         <p className="text-xs text-[var(--text-muted)]">CSV or Excel files (up to 2MB)</p>
-                                        <input id="file-upload" type="file" accept=".csv,.xlsx" onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])} style={{ display: "none" }} />
+                                        <input ref={fileInputRef} id="file-upload" type="file" accept=".csv,.xlsx" onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])} style={{ display: "none" }} />
                                     </label>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] p-10 text-center">
@@ -1899,6 +1911,7 @@ export default function ContactsPage() {
                                                     <span className="text-sm text-[var(--text-muted)]">→</span>
                                                     <select
                                                         value={isCustom ? "custom" : mapping}
+                                                        aria-label={`Map CSV column ${col} to contact field`}
                                                         onChange={(e) => {
                                                             const newMappings = { ...columnMappings };
                                                             const val = e.target.value;
@@ -2006,6 +2019,8 @@ export default function ContactsPage() {
                                 <div
                                     className="relative mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
                                     style={{ background: `conic-gradient(var(--accent) ${jobProgress.progress * 3.6}deg, var(--bg-hover) 0deg)` }}
+                                    role="img"
+                                    aria-label={`Import progress circular indicator: ${jobProgress.progress}%`}
                                 >
                                     <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[var(--bg-card)] text-xs font-bold text-[var(--accent)]">
                                         {jobProgress.progress}%
@@ -2017,7 +2032,14 @@ export default function ContactsPage() {
                                 <p className="mb-4 text-sm text-[var(--text-muted)]">
                                     {jobProgress.processed_items.toLocaleString()} / {jobProgress.total_items.toLocaleString()} contacts processed
                                 </p>
-                                <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-[var(--bg-hover)]">
+                                <div 
+                                    role="progressbar"
+                                    aria-valuenow={jobProgress.progress}
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                    aria-valuetext={`${jobProgress.processed_items.toLocaleString()} of ${jobProgress.total_items.toLocaleString()} contacts processed`}
+                                    className="mb-3 h-1.5 overflow-hidden rounded-full bg-[var(--bg-hover)]"
+                                >
                                     <div className="h-full rounded-full bg-[var(--accent)] transition-all duration-500" style={{ width: `${jobProgress.progress}%` }} />
                                 </div>
                                 <p className="text-xs italic text-[var(--text-muted)]">

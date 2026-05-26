@@ -59,6 +59,12 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
 
     return (
         <div className="flex h-screen overflow-hidden relative">
+            <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-[var(--radius)] focus:bg-[var(--accent)] focus:px-4 focus:py-2 focus:text-white focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+            >
+                Skip to main content
+            </a>
 
             {showSidebar && (
                 isSettingsRoute 
@@ -66,7 +72,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
                     : <Sidebar mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
             )}
 
-            <main className="flex-1 overflow-auto bg-[var(--bg-primary)] flex flex-col min-w-0">
+            <main id="main-content" tabIndex={-1} className="flex-1 overflow-auto bg-[var(--bg-primary)] flex flex-col min-w-0 focus:outline-none">
                 {showHeader && <Header setMobileMenuOpen={() => setMobileMenuOpen(true)} settingsMode={isSettingsRoute} />}
                 <div className={`flex-1 ${showHeader ? `px-5 pt-6 pb-8 md:px-8 max-w-[1600px] mx-auto w-full` : 'w-full'}`}>
                     {children}

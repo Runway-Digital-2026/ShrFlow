@@ -132,6 +132,7 @@ function DataTable<T extends Record<string, unknown>>({
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm border-collapse" role="grid">
+                        <caption className="sr-only">{emptyTitle || "Data grid showing audience contacts and marketing records"}</caption>
                         <thead>
                             <tr className="border-b border-[var(--border)] bg-[var(--bg-card)]">
                                 {columns.map(col => (
@@ -139,25 +140,32 @@ function DataTable<T extends Record<string, unknown>>({
                                         key={col.key}
                                         scope="col"
                                         style={{ width: col.width }}
-                                        className={`
-                                            px-4 py-3 text-left text-xs font-semibold
-                                            text-[var(--text-muted)] uppercase tracking-wide
-                                            whitespace-nowrap
-                                            ${col.sortable ? 'cursor-pointer select-none hover:text-[var(--text-primary)] transition-colors' : ''}
-                                        `}
-                                        onClick={col.sortable ? () => handleSort(col.key) : undefined}
+                                        className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide whitespace-nowrap"
                                         aria-sort={
-                                            sortKey === col.key
-                                                ? sortDir === 'asc' ? 'ascending' : 'descending'
+                                            col.sortable
+                                                ? sortKey === col.key
+                                                    ? sortDir === 'asc' ? 'ascending' : 'descending'
+                                                    : 'none'
                                                 : undefined
                                         }
                                     >
-                                        <span className="flex items-center gap-1">
-                                            {col.header}
-                                            {col.sortable && sortKey === col.key && (
-                                                <span aria-hidden="true">{sortDir === 'asc' ? '↑' : '↓'}</span>
-                                            )}
-                                        </span>
+                                        {col.sortable ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleSort(col.key)}
+                                                className="flex items-center gap-1 hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:underline focus-visible:text-[var(--text-primary)] transition-colors uppercase tracking-wide font-semibold text-xs text-[var(--text-muted)]"
+                                                aria-label={`Sort by ${col.header} in ${sortKey === col.key && sortDir === 'asc' ? 'descending' : 'ascending'} order`}
+                                            >
+                                                <span>{col.header}</span>
+                                                {sortKey === col.key ? (
+                                                    <span aria-hidden="true">{sortDir === 'asc' ? '↑' : '↓'}</span>
+                                                ) : (
+                                                    <span className="opacity-40 hover:opacity-100" aria-hidden="true">↕</span>
+                                                )}
+                                            </button>
+                                        ) : (
+                                            <span>{col.header}</span>
+                                        )}
                                     </th>
                                 ))}
                             </tr>
@@ -184,11 +192,21 @@ function DataTable<T extends Record<string, unknown>>({
                                             transition-colors duration-100
                                         "
                                     >
-                                        {columns.map(col => (
-                                            <td key={col.key} className="px-4 py-3 text-[var(--text-primary)]">
-                                                {col.render ? col.render(row) : String(row[col.key] ?? '—')}
-                                            </td>
-                                        ))}
+                                        {columns.map((col, colIdx) => {
+                                            const cellContent = col.render ? col.render(row) : String(row[col.key] ?? '—');
+                                            if (colIdx === 0) {
+                                                return (
+                                                    <th key={col.key} scope="row" className="px-4 py-3 text-left text-sm font-medium text-[var(--text-primary)] whitespace-nowrap">
+                                                        {cellContent}
+                                                    </th>
+                                                );
+                                            }
+                                            return (
+                                                <td key={col.key} className="px-4 py-3 text-[var(--text-primary)]">
+                                                    {cellContent}
+                                                </td>
+                                            );
+                                        })}
                                     </tr>
                                 ))
                             )}

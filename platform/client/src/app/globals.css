@@ -36,29 +36,29 @@
   /* Text & Typography */
   --text-primary: #0f172a;
   --text-secondary: #1f2a44;
-  --text-muted: #5f6b85;
+  --text-muted: #475569;
   --text-inverted: #f8fafc;
 
   /* Borders & Dividers */
-  --border: rgba(124, 143, 176, 0.24);
+  --border: rgba(100, 116, 139, 0.32);
   --border-highlight: rgba(97, 117, 151, 0.4);
   --accent-border: rgba(37, 88, 217, 0.22);
-  --border-strong: rgba(97, 117, 151, 0.34);
+  --border-strong: rgba(71, 85, 105, 0.45);
 
   /* Semantic Feedback */
-  --success: #059669;
+  --success: #047857;
   --success-bg: rgba(209, 250, 229, 0.8);
-  --success-border: rgba(5, 150, 105, 0.25);
+  --success-border: rgba(4, 120, 87, 0.25);
 
-  --warning: #D97706;
+  --warning: #b45309;
   --warning-bg: rgba(254, 243, 199, 0.8);
-  --warning-border: rgba(217, 119, 6, 0.25);
+  --warning-border: rgba(180, 83, 9, 0.25);
 
-  --danger: #DC2626;
+  --danger: #b91c1c;
   --danger-bg: rgba(254, 226, 226, 0.8);
-  --danger-border: rgba(220, 38, 38, 0.25);
+  --danger-border: rgba(185, 28, 28, 0.25);
 
-  --info: #0284C7;
+  --info: #0369a1;
   --info-bg: rgba(224, 242, 254, 0.8);
 
   /* Radii & Shadows */
@@ -268,9 +268,59 @@ code, kbd, samp, pre, .font-mono {
 
 /* Focus States */
 *:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: 3px solid var(--accent) !important;
+  outline-offset: 3px !important;
+  border-radius: var(--radius, 4px) !important;
+}
+
+/* Accessible Link underlines for standard editorial and textual anchors */
+main a:not([role="button"]):not(.btn):not(.badge):not(.sidebar-link):not(.nav-link) {
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+  text-decoration-thickness: 1.5px !important;
+  transition: opacity 0.15s ease !important;
+}
+main a:not([role="button"]):not(.btn):not(.badge):not(.sidebar-link):not(.nav-link):hover {
+  opacity: 0.8 !important;
+}
+
+/* High Contrast Theme overrides based on OS accessibility settings */
+@media (prefers-contrast: more) {
+  :root, .dark {
+    --border: CanvasText !important;
+    --border-strong: CanvasText !important;
+    --text-muted: CanvasText !important;
+    --text-secondary: CanvasText !important;
+    --accent: LinkText !important;
+    --accent-hover: LinkText !important;
+    --success: CanvasText !important;
+    --warning: CanvasText !important;
+    --danger: CanvasText !important;
+    --info: CanvasText !important;
+  }
+  *:focus-visible {
+    outline: 4px solid CanvasText !important;
+    outline-offset: 4px !important;
+  }
+  .badge, .glass-panel, .btn-premium {
+    border: 2px solid CanvasText !important;
+    background: Canvas !important;
+    color: CanvasText !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Reduced Motion Settings for neurodivergent and motion-sensitive users */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+    transform: none !important;
+  }
 }
 
 /* Scrollbars */

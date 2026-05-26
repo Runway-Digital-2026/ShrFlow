@@ -211,26 +211,31 @@ export default function BatchDetailPage() {
                     />
                 ) : (
                     <table className="w-full border-collapse">
+                        <caption className="sr-only">List of contacts imported in this batch, with email, name, subscription status, import date, and management options.</caption>
                         <thead>
                             <tr className="border-b border-[var(--border)] bg-[var(--bg-hover)]">
-                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Email</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Added</th>
-                                <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Actions</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Email</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Name</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Status</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Added</th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {contacts.map((contact) => (
                                 <tr key={contact.id} className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--bg-hover)]">
-                                    <td className="px-6 py-4">
+                                    <th scope="row" className="px-6 py-4 text-left font-normal">
                                         <div className="flex flex-col gap-1">
-                                            <Link href={`/contacts/${contact.id}`} className="text-sm font-medium text-[var(--accent)] transition hover:opacity-80">
+                                            <Link href={`/contacts/${contact.id}`} className="text-sm font-medium text-[var(--accent)] underline transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">
                                                 {contact.email}
                                             </Link>
-                                            {contact.email_domain && <Badge variant="outline">{contact.email_domain}</Badge>}
+                                            {contact.email_domain && (
+                                                <div>
+                                                    <Badge variant="outline">{contact.email_domain}</Badge>
+                                                </div>
+                                            )}
                                         </div>
-                                    </td>
+                                    </th>
                                     <td className="px-6 py-4 text-sm text-[var(--text-primary)]">
                                         {[contact.first_name, contact.last_name].filter(Boolean).join(' ') || '—'}
                                     </td>
@@ -240,7 +245,7 @@ export default function BatchDetailPage() {
                                     <td className="px-6 py-4 text-sm text-[var(--text-muted)]">{new Date(contact.created_at).toLocaleDateString()}</td>
                                     <td className="px-6 py-4 text-right">
                                         <Link href={`/contacts/${contact.id}`}>
-                                            <Button variant="ghost" size="sm">Edit Contact</Button>
+                                            <Button variant="ghost" size="sm" aria-label={`Edit contact ${contact.email}`}>Edit Contact</Button>
                                         </Link>
                                     </td>
                                 </tr>

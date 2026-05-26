@@ -43,14 +43,39 @@ export default function ReportsPage() {
                         <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-[var(--accent)]" /> Sent</span>
                         <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-[var(--info)]/60" /> Opens</span>
                     </div>
-                    <div className="flex h-[220px] items-end justify-between gap-2 border-b border-[var(--border)] pb-6">
+                    <div 
+                        role="img"
+                        aria-label="Bar chart showing sent volume and open rate metrics across 12 periods. Sent volume peaks at 90% in period 7. Opens peak at 36% in period 7. Complete numerical details are available in the table alternative below."
+                        className="flex h-[220px] items-end justify-between gap-2 border-b border-[var(--border)] pb-6"
+                    >
                         {[60, 45, 75, 50, 80, 65, 90, 55, 70, 40, 60, 85].map((height, index) => (
-                            <div key={index} className="flex w-full max-w-[22px] flex-col items-center gap-0.5">
+                            <div key={index} className="flex w-full max-w-[22px] flex-col items-center gap-0.5" aria-hidden="true">
                                 <div className="w-full rounded-[var(--radius)] bg-[var(--info)]/45" style={{ height: `${height * 0.4}%` }} />
                                 <div className="w-full rounded-[var(--radius)] bg-[var(--accent)]" style={{ height: `${height}%` }} />
                             </div>
                         ))}
                     </div>
+
+                    <table className="sr-only">
+                        <caption>Email Performance chart numerical data alternative</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Period</th>
+                                <th scope="col">Sent Volume (Relative)</th>
+                                <th scope="col">Open Volume (Relative)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[60, 45, 75, 50, 80, 65, 90, 55, 70, 40, 60, 85].map((height, index) => (
+                                <tr key={index}>
+                                    <th scope="row">Period {index + 1}</th>
+                                    <td>{height}%</td>
+                                    <td>{(height * 0.4).toFixed(0)}%</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
                     <div className="mt-3 flex justify-between text-xs text-[var(--text-muted)]">
                         <span>Jan 1</span>
                         <span>Jan 7</span>
@@ -87,17 +112,18 @@ export default function ReportsPage() {
             <SectionCard title="ISP Performance" description="Track how major mailbox providers are performing across send volume, engagement, and complaint rates.">
                 <div className="hidden overflow-hidden rounded-[var(--radius)] border border-[var(--border)] md:block">
                     <table className="w-full border-collapse">
+                        <caption className="sr-only">Performance metrics across mailbox providers, including volume sent, opens, clicks, and complaint rates.</caption>
                         <thead>
                             <tr className="border-b border-[var(--border)] bg-[var(--bg-hover)]">
                                 {['ISP', 'Emails Sent', 'Open Rate', 'Click Rate', 'Complaint Rate'].map((heading) => (
-                                    <th key={heading} className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">{heading}</th>
+                                    <th key={heading} scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">{heading}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody>
                             {ispPerformance.map((isp) => (
                                 <tr key={isp.name} className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--bg-hover)]">
-                                    <td className="px-6 py-4 text-sm font-medium text-[var(--text-primary)]">{isp.name}</td>
+                                    <th scope="row" className="px-6 py-4 text-left text-sm font-medium text-[var(--text-primary)]">{isp.name}</th>
                                     <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{isp.sent}</td>
                                     <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{isp.openRate}</td>
                                     <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{isp.clickRate}</td>
