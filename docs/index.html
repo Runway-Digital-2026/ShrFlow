@@ -52,7 +52,6 @@
 
 /* ─── RESET ───────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0}
-html{scroll-behavior:smooth}
 body{
   font-family:'Plus Jakarta Sans',system-ui,sans-serif;
   font-size:var(--base-font-size);
@@ -60,6 +59,18 @@ body{
   background:var(--bg);
   color:var(--text);
   transition:background .2s var(--ease),color .2s var(--ease);
+  min-height:100vh;
+  overflow-y:scroll;
+}
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(circle at top left, rgba(37,88,217,.07), transparent 32%),
+    radial-gradient(circle at 85% 15%, rgba(14,165,233,.06), transparent 24%);
+  pointer-events:none;
+  z-index:-1;
 }
 
 /* ─── SCROLL PROGRESS ─────────────────────────────────────── */
@@ -213,13 +224,28 @@ body{
 
 /* ─── CONTENT ─────────────────────────────────────────────── */
 .markdown-section{
-  max-width:760px !important;
-  padding:44px 52px 88px !important;
+  max-width:980px !important;
+  width:100% !important;
+  padding:56px 0 96px !important;
+  margin:0 auto !important;
   animation:fadeUp .25s var(--ease) both;
 }
 @keyframes fadeUp{
   from{opacity:0;transform:translateY(6px)}
   to{opacity:1;transform:translateY(0)}
+}
+
+.content{
+  padding:0 clamp(24px,4vw,48px) 0 clamp(28px,4vw,42px) !important;
+}
+
+.content-inner{
+  max-width:1160px !important;
+  margin:0 auto !important;
+}
+
+.markdown-section > :first-child{
+  margin-top:0 !important;
 }
 
 .markdown-section h1{
@@ -389,9 +415,23 @@ body{
   border-top:1px solid var(--border) !important;
   padding-top:24px !important;margin-top:40px !important;
 }
+.pagination-item{
+  flex:1 1 0 !important;
+}
 .pagination-item a{
+  display:flex !important;
+  min-height:74px;
+  align-items:center;
+  padding:14px 18px !important;
+  border:1px solid var(--border) !important;
+  border-radius:10px !important;
+  background:var(--bg-card) !important;
   color:var(--accent) !important;font-weight:600 !important;
   text-decoration:none !important;
+}
+.pagination-item a:hover{
+  border-color:var(--accent) !important;
+  box-shadow:0 8px 24px var(--accent-ring) !important;
 }
 
 /* ─── CUSTOM COMPONENTS (in markdown) ────────────────────── */
@@ -553,6 +593,9 @@ body{
   border-radius:12px;
   overflow:hidden;
   box-shadow:0 10px 24px rgba(15,23,42,.05);
+  height:100%;
+  display:flex;
+  flex-direction:column;
 }
 .tour-thumb{
   display:block;
@@ -569,6 +612,9 @@ body{
 }
 .tour-body{
   padding:14px 15px 16px;
+  display:flex;
+  flex-direction:column;
+  flex:1;
 }
 .tour-title{
   font-size:.96rem;
@@ -613,10 +659,13 @@ body{
 
 /* ─── MOBILE ──────────────────────────────────────────────── */
 @media(max-width:768px){
+  .content{padding:0 16px !important}
+  .content-inner{width:100% !important}
   .markdown-section{padding:28px 20px 64px !important}
   .markdown-section h1{font-size:1.55rem !important}
   .hero{padding:36px 20px 32px !important}
   .card-grid{grid-template-columns:1fr !important}
+  .journey-grid,.tour-grid{grid-template-columns:1fr !important}
   .hero-btns .btn{width:100%;justify-content:center}
 }
 
@@ -640,12 +689,19 @@ body{
   <script>
     window.$docsify = {
       name:        'ShrFlow',
+      nameLink:    '#/',
       repo:        'https://github.com/Rahul-pamula/ShrFlow',
       loadSidebar: '_sidebar.md',
       subMaxLevel: 2,
       coverpage:   false,
       auto2top:    true,
       homepage:    'README.md',
+      notFoundPage:'_404.md',
+      relativePath:false,
+      alias: {
+        '/.*/_sidebar.md': '/_sidebar.md',
+        '/.*/_404.md': '/_404.md'
+      },
 
       search: {
         maxAge:      86400000,
@@ -662,10 +718,31 @@ body{
       pagination: {
         previousText: '← Prev',
         nextText:     'Next →',
-        crossChapter: true,
+        crossChapter: false,
       },
 
       plugins: [
+        function(hook) {
+          function normalizeHomeRoute() {
+            if (window.location.hash === '#/README' || window.location.hash === '#/README.md') {
+              history.replaceState(null, '', '#/');
+            }
+          }
+
+          hook.init(function() {
+            normalizeHomeRoute();
+          });
+
+          hook.doneEach(function() {
+            normalizeHomeRoute();
+            requestAnimationFrame(function() {
+              window.scrollTo(0, 0);
+              var content = document.querySelector('.content');
+              if (content) content.scrollTop = 0;
+            });
+          });
+        },
+
         /* ── Brand + dark toggle injected in sidebar ── */
         function(hook) {
           hook.doneEach(function() {
@@ -699,6 +776,11 @@ body{
               header.appendChild(btn);
               appName.innerHTML = '';
               appName.appendChild(header);
+            }
+
+            var homeLink = document.querySelector('.sidebar .app-name-link');
+            if (homeLink) {
+              homeLink.setAttribute('href', '#/');
             }
           });
         },
