@@ -273,15 +273,14 @@ code, kbd, samp, pre, .font-mono {
   border-radius: var(--radius, 4px) !important;
 }
 
-/* Accessible Link underlines for standard editorial and textual anchors */
-main a:not([role="button"]):not(.btn):not(.badge):not(.sidebar-link):not(.nav-link) {
-  text-decoration: underline !important;
-  text-underline-offset: 3px !important;
-  text-decoration-thickness: 1.5px !important;
-  transition: opacity 0.15s ease !important;
+/* Accessibility without underlines — WCAG compliant via focus + contrast + cursor */
+a {
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
 }
-main a:not([role="button"]):not(.btn):not(.badge):not(.sidebar-link):not(.nav-link):hover {
-  opacity: 0.8 !important;
+a:hover {
+  opacity: 0.8;
 }
 
 /* High Contrast Theme overrides based on OS accessibility settings */
