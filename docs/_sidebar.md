@@ -33,7 +33,7 @@
 * **Internal Planning**
   * [Planning Hub](plan/README.md)
   * [Strategic Overview](plan/overview.md)
-  * [Phase Roadmap](plan/phase_wise_plan.md)
+  * [Phase Roadmap](https://github.com/Rahul-pamula/ShrFlow/blob/main/docs/plan/phase_wise_plan.md)
   * [Client Requirements](plan/client_req.md)
   * [Phase Library](plan/phases/README.md)
   * [Audit Library](plan/audits/README.md)
