@@ -1,211 +1,139 @@
-# 📧 ShrFlow — Enterprise Email Engine
+# ShrFlow
 
-> A high-performance, self-hosted, multi-tenant email marketing platform.  
-> Built strictly on modern containerized architecture: **FastAPI · Next.js · RabbitMQ · AWS SES · Supabase · Docker**.
+ShrFlow is a self-hosted, multi-tenant email operations platform for teams that want full control over campaigns, audiences, templates, sending infrastructure, and delivery workflows.
 
----
+It combines a Next.js product UI, a FastAPI backend, asynchronous workers, RabbitMQ-driven job processing, and PostgreSQL-backed tenancy into a single product-oriented stack.
 
-## 🌟 What This Project Does
+## Why ShrFlow
 
-ShrFlow is a **full-scale, self-hosted email marketing platform** — designed as a high-performance, open-source alternative to platforms like Mailchimp or SendGrid. 
+- Multi-tenant workspace isolation for teams, agencies, and operational groups
+- Campaign orchestration with scheduling, throttling, and pause/resume controls
+- Audience import workflows for large contact lists and background processing
+- Template and email composition flows backed by MJML compilation
+- Delivery infrastructure split between campaign sending and system email workflows
+- Auditability, API access, and infrastructure visibility for operator-heavy teams
 
-**Core Capabilities:**
-*   **Multi-tenant Architecture:** Secure workspace isolation spanning Teams and Agencies.
-*   **High-Velocity Contacts Engine:** Gigabyte-scale CSV ingestion, segmentation, and deduplication handled asynchronously by RabbitMQ data workers.
-*   **Visual Template Builder:** Drag-and-drop block editor compiling into responsive MJML, featuring an AI Copywriting Assistant.
-*   **Campaign Orchestration:** Fine-grained dispatch throttling, scheduling, spintax merge-tags, and instant pause/cancel controls.
-*   **Dual Delivery Pipeline:** Critical system emails route securely through trusted Gmail SMTP, while massive bulk marketing campaigns isolate their reputation through AWS SES.
-*   **Deep Observability:** Granular audit logging, Supabase Edge Function open-tracking pixels, and real-time AWS SNS webhook bounce/complaint handling.
+## Product Preview
 
----
+<p align="center">
+  <img src="docs/screen-shots/landing-page.png" alt="ShrFlow marketing page" width="48%" />
+  <img src="docs/screen-shots/dashboard.png" alt="ShrFlow dashboard" width="48%" />
+</p>
 
-## 📸 Visual Tour
+<p align="center">
+  <img src="docs/screen-shots/templates-list.png" alt="ShrFlow templates library" width="48%" />
+  <img src="docs/screen-shots/settings-general.png" alt="ShrFlow settings overview" width="48%" />
+</p>
 
-### 🖥️ Dashboard & Audience Management
-![Contacts Dashboard](docs/plan/screen_shots/Screenshot%202026-05-07%20at%209.10.03%E2%80%AFAM.png)
-*Real-time audience monitoring, segmentation, and health tracking.*
+## Documentation
 
----
+- Product docs: [docs/README.md](docs/README.md)
+- Introduction: [docs/introduction.md](docs/introduction.md)
+- Quick start: [docs/getting-started/quick-start.md](docs/getting-started/quick-start.md)
+- Product tour: [docs/screen-shots/README.md](docs/screen-shots/README.md)
+- Live docs site: [rahul-pamula.github.io/ShrFlow](https://rahul-pamula.github.io/ShrFlow/)
 
-### 🎨 Design & Infrastructure
-<table border="0">
-  <tr>
-    <td width="50%">
-      <p align="center"><b>Visual Template Library</b></p>
-      <img src="docs/plan/screen_shots/Screenshot%202026-05-07%20at%209.20.10%E2%80%AFAM.png" width="100%" />
-    </td>
-    <td width="50%">
-      <p align="center"><b>Infrastructure & Senders</b></p>
-      <img src="docs/plan/screen_shots/Screenshot%202026-05-07%20at%2010.09.18%E2%80%AFAM.png" width="100%" />
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <p align="center"><b>Enterprise Auth Shell</b></p>
-      <img src="docs/plan/screen_shots/Screenshot%202026-05-07%20at%209.03.21%E2%80%AFAM.png" width="100%" />
-    </td>
-    <td width="50%">
-      <p align="center"><b>Import Workflows</b></p>
-      <img src="docs/plan/screen_shots/Screenshot%202026-05-07%20at%209.09.49%E2%80%AFAM.png" width="100%" />
-    </td>
-  </tr>
-</table>
-
-<details>
-<summary><b>🔍 View More System Previews (Settings, Modals, Preferences)</b></summary>
-<br>
-
-| Feature | Preview |
-| :--- | :--- |
-| **User Preferences** | ![Preferences](docs/plan/screen_shots/Screenshot%202026-05-07%20at%2010.11.04%E2%80%AFAM.png) |
-| **Batch History** | ![Import History](docs/plan/screen_shots/Screenshot%202026-05-07%20at%209.09.49%E2%80%AFAM.png) |
-
----
-### 📖 [Explore the Full 40+ Screenshot Gallery →](docs/VISUAL_GALLERY.md)
-</details>
-
-## 🛠 Tech Stack
+## Stack
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
-| **Backend API** | Python FastAPI + Uvicorn |
-| **Async Workers** | Python async (aio-pika, aiosmtplib) + RabbitMQ |
-| **Database** | Supabase (PostgreSQL + Edge Functions) |
-| **State & Cache** | Redis (Upstash) |
-| **Delivery** | Amazon SES (Campaigns) & Gmail SMTP (System Mail) |
+| Frontend | Next.js 14, TypeScript, Tailwind CSS |
+| Backend API | FastAPI |
+| Workers | Python background workers |
+| Queue | RabbitMQ |
+| Database | PostgreSQL / Supabase |
+| Cache & coordination | Redis |
+| Email infrastructure | SMTP and AWS-based sending workflows |
+| Packaging | Docker Compose |
 
----
+## Repository Structure
 
-## 🏗 Architecture & Design Documents
+| Path | Purpose |
+|---|---|
+| `platform/client` | Next.js application |
+| `platform/api` | FastAPI backend |
+| `platform/worker` | Background workers and handlers |
+| `platform/services/template_service` | Template-service decomposition work |
+| `docs` | Product documentation and visual tour |
+| `migrations` | Database migrations |
+| `deploy` | Dockerfiles and deployment assets |
+| `scripts` | Project utility scripts |
 
-ShrFlow uses a complex asynchronous dual-pipeline architecture. Instead of cluttering the README, all technical deep-dives, RAG design patterns, and network graphs are strictly maintained in our dedicated documentation directory:
+## Local Development
 
-*   📘 **[Complete Architectural Overview (with diagrams)](docs/phases/shrflow_architecture.md)**
-*   📋 **[Phase-by-Phase Roadmap & Execution Plan](docs/phases/phase_wise_plan.md)**
+### 1. Prerequisites
 
----
+- Git
+- Docker Desktop or Docker Engine
 
-## 📊 Live Project Tracker
+### 2. Clone the repository
 
-You can monitor our granular, task-by-task engineering progress directly at our hosted tracker:  
-🌍 **[Open Live Phase Tracker](https://rahul-pamula.github.io/ShrFlow/progress.html)**
-
-The platform has been architected across **14 phases (Phase 0 — Phase 13)**, covering everything from UI/UX foundations, multi-tenant auth, contacts ingestion, campaign orchestration, delivery pipelines, analytics, GDPR compliance, AI integrations, and full enterprise scale. See the full breakdown in the tracker above.
-
-*(The tracker automatically reflects tasks shipped directly to the `main` branch).*
-
----
-
-## 🚀 Guided Setup
-
-We have completely deprecated manual OS installations (Windows/Mac/Linux) and multi-terminal setups. **The entire platform is strictly containerized.** 
-
-### Step 1 — System Prerequisites
-You only need exactly two things installed on your computer to run this entire platform:
-1.  **Git** (To clone the repository) -> [Install Git](https://git-scm.com/downloads)
-2.  **Docker Desktop** (To run the orchestrator) -> [Install Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
-### Step 2 — Clone the Repository
 ```bash
 git clone <your-repo-url>
 cd ShrFlow
 ```
 
-### Step 3 — Environment Variables
-Duplicate the `.env.example` file and rename it to `.env` in the root folder. You must carefully configure every single variable below for the workers and API to function.
-
-```env
-# ── 1. Database (Supabase) ──────────────────────────────────
-SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-SUPABASE_PUBLISHABLE_KEY=your_publishable_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-DATABASE_URL=postgresql://postgres.xxx:xxx@aws...
-
-# ── 2. Message Queue (RabbitMQ) ─────────────────────────────
-RABBITMQ_URL=amqps://user:pass@host.cloudamqp.com/vhost
-
-# ── 3. Tenant Email Dispatch (AWS SES) ──────────────────────
-# From email is resolved dynamically from each tenant's verified sender at runtime.
-SMTP_HOST=email-smtp.ap-southeast-2.amazonaws.com
-SMTP_PORT=587
-SMTP_USERNAME=your_ses_username
-SMTP_PASSWORD=your_ses_password
-
-# ── 4. Centralized System Mailer (Gmail SMTP) ────────────────
-# NOTE: We currently use Gmail SMTP for all system/transactional emails
-# (welcome emails, OTPs, password resets, team invites) because we do not
-# yet own a dedicated domain for ShrFlow. Gmail SMTP provides reliable
-# inbox delivery in the interim.
-#
-# FUTURE MIGRATION: Once we acquire our own domain (e.g. shrflow.app),
-# this will be replaced with a dedicated transactional mail provider
-# (e.g. AWS SES via mail.shrflow.app) for full production-grade delivery.
-SYSTEM_SMTP_HOST=smtp.gmail.com
-SYSTEM_SMTP_PORT=587
-SYSTEM_SMTP_USERNAME=shrmail.app@gmail.com
-SYSTEM_SMTP_PASSWORD=your_google_app_password
-SYSTEM_SMTP_FROM_EMAIL=shrmail.app@gmail.com
-SYSTEM_SMTP_FROM_NAME=Email Engine
-
-# ── 5. Authentication (Custom JWT) ──────────────────────────
-JWT_SECRET_KEY=generate_a_long_hex_string_here
-# Generate with: python3 -c "import secrets; print(secrets.token_hex(32))"
-
-# ── 6. OAuth Providers ────────────────────────────────────────
-GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
-
-# ── 7. Caching & Storage (Redis) ──────────────────────────────
-REDIS_URL=rediss://default:xxxx@upstash.io:6379
-
-# ── 8. Tracking API (Supabase Edge Functions) ─────────────────
-API_URL=https://xxxxxxxx.supabase.co/functions/v1
-TRACKING_SECRET=secure_hmac_tracking_secret
-
-# ── 9. Direct AWS Access ──────────────────────────────────────
-AWS_ACCESS_KEY_ID=your_aws_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret
-AWS_REGION=ap-southeast-2
-
-# ── 10. Core App Settings ─────────────────────────────────────
-DEBUG=True
-ENVIRONMENT=development
-TRACE_ID_HEADER=X-Trace-ID
-BACKEND_URL=http://localhost:8000
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-FRONTEND_URL=http://localhost:3000
-CAPTCHA_ENABLED=false
-RECAPTCHA_SECRET_KEY=your_recaptcha_secret
-```
-
-### Step 4 — Run the Docker Cluster
-Because everything is containerized, you just spin up your Docker Desktop application and run one command to orchestrate the Frontend, FastAPI backend, and all 4 Python background workers effortlessly.
-
-🚨 **Detailed Docker Guide:** Please read our dedicated file: **[docs/docker_notes.md](docs/docker_notes.md)** for exact operational instructions, live log streaming, and troubleshooting commands!
+### 3. Create your environment file
 
 ```bash
-docker-compose up -d
+cp .env.example .env
 ```
-*That's it. Never run local terminals again!*
 
----
+Then review and update the values in `.env` for your environment. At minimum, pay attention to:
 
-## 🤝 Open Source Contributions
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `DATABASE_URL`
+- `RABBITMQ_URL`
+- `REDIS_URL`
+- SMTP and AWS-related variables if you are testing sending flows
 
-**ShrFlow is fully open source, and we actively welcome contributions!** 
+Reference: [.env.example](.env.example)
 
-Whether you're fixing a bug, hardening security, or building out a massive new feature (like our upcoming Stripe integration or advanced analytics), we want your Pull Requests.
+### 4. Start the stack
 
-### How to Contribute:
-1. **Fork** the repository and clone your fork locally.
-2. **Create a branch** for your feature: `git checkout -b feature/amazing-new-tracker`
-3. **Commit** your isolated changes: `git commit -m 'feat: added amazing new tracker UI'`
-4. **Push** your branch: `git push origin feature/amazing-new-tracker`
-5. **Open a Pull Request** against our `main` branch. 
+```bash
+docker-compose up --build
+```
 
-Please ensure your code follows the existing PEP8 (Python) and ESLint (Next.js) standards. All PRs will be rigorously reviewed before merging into the main orchestrations. Let's build the best self-hosted email engine together!
+Default local endpoints:
+
+- Frontend: `http://localhost:3000`
+- API: `http://localhost:8000`
+- Template service: `http://localhost:8001`
+
+For deeper setup notes, use:
+
+- [docs/getting-started/quick-start.md](docs/getting-started/quick-start.md)
+- [docs/docker_notes.md](docs/docker_notes.md)
+- [docs/infrastructure/database-setup.md](docs/infrastructure/database-setup.md)
+
+## Key Workflows
+
+- Start with the dashboard and settings flow to understand tenancy and account setup
+- Import contacts through the audience/import path
+- Build or manage templates in the template workspace
+- Launch campaigns from the campaign workflow
+- Verify domains and sender identities before production sending
+
+## API and Architecture
+
+Use the docs site for the maintained references instead of relying on the root README:
+
+- API reference: [docs/api-reference/authentication.md](docs/api-reference/authentication.md)
+- Delivery engine: [docs/advanced/deliverability-engine.md](docs/advanced/deliverability-engine.md)
+- Security and RBAC: [docs/advanced/rbac-security.md](docs/advanced/rbac-security.md)
+- Database RLS: [docs/advanced/database-rls.md](docs/advanced/database-rls.md)
+
+## Contributing
+
+Contributions are welcome. If you are making changes:
+
+1. Create a focused branch
+2. Keep backend, frontend, and docs changes clearly scoped
+3. Update documentation when behavior or setup changes
+4. Open a pull request with a clear summary of what changed
+
+## Status
+
+ShrFlow is an actively evolving product repository. The documentation site is the source of truth for onboarding, product orientation, and technical references.
