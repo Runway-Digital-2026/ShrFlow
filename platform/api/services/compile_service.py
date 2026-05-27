@@ -65,17 +65,27 @@ def _render_image(props: Dict[str, Any]) -> str:
     src = _esc(props.get("src", props.get("url", "")))
     alt = _esc(props.get("alt", "Image"))
 
+    href_attr = ""
+    link_url = props.get("linkUrl") or props.get("href")
+    if link_url and link_url != "#":
+        if not link_url.startswith("http://") and not link_url.startswith("https://") and not link_url.startswith("mailto:") and not link_url.startswith("tel:"):
+            link_url = "https://" + link_url
+        href_attr = f'href="{_esc(link_url)}"'
+
     # Force 100% width inheritance from the parent column and section grid.
     return (
         f'<mj-image align="{align}" src="{src}" alt="{alt}" width="100%" '
-        f'fluid-on-mobile="true" padding="0" />'
+        f'{href_attr} fluid-on-mobile="true" padding="0" />'
     )
 
 
 def _render_button(props: Dict[str, Any]) -> str:
     align = props.get("align", "center")
     text = _esc(props.get("text", props.get("label", "Click Here")))
-    url = _esc(props.get("url", "#"))
+    url = props.get("url") or props.get("linkUrl") or "#"
+    if url and url != "#" and not url.startswith("http://") and not url.startswith("https://") and not url.startswith("mailto:") and not url.startswith("tel:"):
+        url = "https://" + url
+    url = _esc(url)
     bg = props.get("backgroundColor", "#4f46e5")
     color = props.get("color", "#ffffff")
     radius = props.get("borderRadius", 4)
@@ -118,7 +128,10 @@ def _render_social(props: Dict[str, Any]) -> str:
             "youtube": "youtube-noshare",
         }
         mj_name = name_map.get(platform, f"{platform}-noshare")
-        href = _esc(icon.get("url", "#"))
+        href = icon.get("url") or "#"
+        if href and href != "#" and not href.startswith("http://") and not href.startswith("https://") and not href.startswith("mailto:") and not href.startswith("tel:"):
+            href = "https://" + href
+        href = _esc(href)
         elements.append(
             f'<mj-social-element name="{mj_name}" href="{href}" />'
         )

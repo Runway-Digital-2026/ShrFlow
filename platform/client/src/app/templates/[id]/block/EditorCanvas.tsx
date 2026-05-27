@@ -198,8 +198,15 @@ function FloatingToolbar({ block, onUpdate, position, onDuplicate, onDelete }: {
                     )}
                     {(block.type === "button" || block.type === "image" || block.type === "text") && (
                         <div style={{ marginTop: block.type === "image" ? 10 : 0 }}>
-                            <label style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>Link URL</label>
-                            <input className="popover-input" value={block.props.linkUrl || ""} onChange={e => onUpdate("linkUrl", e.target.value)} placeholder="https://..." />
+                            <label style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>
+                                {block.type === "button" ? "Button URL" : "Link URL"}
+                            </label>
+                            <input 
+                                className="popover-input" 
+                                value={(block.type === "button" ? block.props.url : block.props.linkUrl) || ""} 
+                                onChange={e => onUpdate(block.type === "button" ? "url" : "linkUrl", e.target.value)} 
+                                placeholder="https://..." 
+                            />
                         </div>
                     )}
                 </div>

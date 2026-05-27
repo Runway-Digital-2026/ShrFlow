@@ -136,9 +136,9 @@ async def get_campaign_analytics(
 
     # Collect click coordinates for heatmap overlay
     clicks_heatmap = [
-        {"x": e.get("click_x"), "y": e.get("click_y")}
+        {"x": e.get("click_x"), "y": e.get("click_y"), "url": e.get("url")}
         for e in deduped_events
-        if e.get("event_type") == "click" and e.get("click_x") is not None and e.get("click_y") is not None
+        if e.get("event_type") == "click"
     ]
 
     return {

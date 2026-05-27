@@ -47,7 +47,7 @@ export default function CampaignAnalyticsPage() {
   const [campaign, setCampaign] = useState<any | null>(null);
   const [sources, setSources] = useState<Record<string, number>>({});
   const [bounceBreakdown, setBounceBreakdown] = useState<any[]>([]);
-  const [clicksHeatmap, setClicksHeatmap] = useState<{ x: number; y: number }[]>([]);
+  const [clicksHeatmap, setClicksHeatmap] = useState<{ x: number | null; y: number | null; url?: string | null }[]>([]);
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -306,7 +306,7 @@ export default function CampaignAnalyticsPage() {
 
 interface HeatmapOverlayProps {
   html: string;
-  clicks: { x: number; y: number }[];
+  clicks: { x: number | null; y: number | null; url?: string | null }[];
   show: boolean;
 }
 
@@ -343,9 +343,31 @@ function HeatmapOverlay({ html, clicks, show }: HeatmapOverlayProps) {
 
             if (tempCtx) {
               clicks.forEach((click) => {
-                const x = click.x;
-                const y = click.y;
-                if (x === null || y === null) return;
+                let x = click.x;
+                let y = click.y;
+
+                if ((x === null || y === null) && click.url) {
+                  const aTags = Array.from(doc.querySelectorAll('a'));
+                  const matchingTag = aTags.find(a => {
+                    const href = a.getAttribute('href');
+                    if (!href) return false;
+                    try {
+                      const normHref = href.toLowerCase().replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+                      const normClick = click.url!.toLowerCase().replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+                      return normHref === normClick || normHref.includes(normClick) || normClick.includes(normHref);
+                    } catch {
+                      return href === click.url;
+                    }
+                  });
+
+                  if (matchingTag) {
+                    const rect = matchingTag.getBoundingClientRect();
+                    x = rect.left + rect.width / 2;
+                    y = rect.top + rect.height / 2;
+                  }
+                }
+
+                if (x === null || y === null || isNaN(x) || isNaN(y)) return;
 
                 const radius = 25;
                 const grad = tempCtx.createRadialGradient(x, y, 1, x, y, radius);
