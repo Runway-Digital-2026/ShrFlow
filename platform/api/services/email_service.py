@@ -147,8 +147,8 @@ async def send_campaign_review_notification(
     })
 
 async def send_sender_verification(to_email: str, token: str) -> bool:
-    """Send a verification email for a new sender identity."""
-    verify_url = f"{FRONTEND_URL}/infrastructure?verify_token={token}"
+    BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000").rstrip("/")
+    verify_url = f"{BACKEND_URL}/senders/confirm?token={token}"
     return await publish_system_email("sender_verification", to_email, {
         "token": token,
         "verify_url": verify_url
@@ -181,9 +181,9 @@ async def send_franchise_request_email(
 ) -> bool:
     """Notify domain owner of a new franchise request."""
     # API URL for direct actions, Frontend URL for dashboard view
-    API_URL = os.getenv("API_URL", "http://localhost:8000").rstrip("/")
-    approve_url = f"{API_URL}/team/franchise-requests/{request_id}/approve?token={token}"
-    reject_url = f"{API_URL}/team/franchise-requests/{request_id}/reject?token={token}"
+    BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000").rstrip("/")
+    approve_url = f"{BACKEND_URL}/team/franchise-requests/{request_id}/approve?token={token}"
+    reject_url = f"{BACKEND_URL}/team/franchise-requests/{request_id}/reject?token={token}"
     dashboard_url = f"{FRONTEND_URL}/settings/franchises"
     
     return await publish_system_email("franchise_request", to_email, {

@@ -7,6 +7,8 @@ import { useAuth } from '@/context/AuthContext';
 import { can } from '@/utils/permissions';
 import { useRouter } from 'next/navigation';
 import { Badge, Button, EmptyState, InlineAlert, PageHeader, SectionCard, StatCard } from '@/components/ui';
+import { SmartInsights, PredictiveAnalytics, SubscriberIntelligence, AIChatbot, EngagementHeatmap } from '@/components/analytics';
+
 
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -308,6 +310,19 @@ export default function AnalyticsPage() {
                     </SectionCard>
                 </div>
             </div>
+
+            {/* ── AI-Powered Analytics Section ──────────────────────────────── */}
+            <SmartInsights token={token} />
+
+            <EngagementHeatmap token={token} />
+
+            <div className="grid gap-6 lg:grid-cols-2">
+                <PredictiveAnalytics token={token} />
+                <SubscriberIntelligence token={token} />
+            </div>
+
+            {/* ── Floating AI Chatbot Widget ─────────────────────────────────── */}
+            <AIChatbot token={token} />
         </div>
     );
 }

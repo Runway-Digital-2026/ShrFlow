@@ -152,11 +152,57 @@ def _inject_tracking_pixel(body_html: str, dispatch_id: str, tracking_secret: st
         return body_html.replace("</body>", pixel + "</body>", 1)
     return body_html + pixel
 
-def _wrap_links(body_html: str, dispatch_id: str) -> str:
-    return body_html
+def _wrap_links(body_html: str, dispatch_id: str, tracking_secret: str) -> str:
+    if not body_html:
+        return ""
+    
+    api_base = _get_api_base()
+    
+    def replacer(match):
+        attrs_before = match.group(1)
+        url = match.group(2)
+        attrs_after = match.group(3)
+        
+        # Skip if unsubscribe link, track link, or mailto
+        if "/unsubscribe" in url or "/track/" in url or "mailto:" in url:
+            return match.group(0)
+            
+        # base64url encode the destination URL (no padding)
+        encoded_url = base64.urlsafe_b64encode(url.encode()).decode().rstrip("=")
+        
+        # Sign the encoded URL: HMAC signature base is {dispatch_id}:{encoded_url}
+        base_str = f"{dispatch_id}:{encoded_url}"
+        sig = hmac.new(tracking_secret.encode(), base_str.encode(), hashlib.sha256).hexdigest()
+        
+        # Construct tracking URL
+        tracking_url = f"{api_base}/track/click?d={dispatch_id}&u={encoded_url}&s={sig}"
+        
+        # Reconstruct the <a> tag
+        return f'<a {attrs_before}href="{tracking_url}"{attrs_after}>'
+        
+    pattern = re.compile(r'<a\s+([^>]*?)href=["\'](https?://[^"\']+)["\']([^>]*?)>', re.IGNORECASE | re.DOTALL)
+    return pattern.sub(replacer, body_html)
 
-def _wrap_links_text(body_text: str, dispatch_id: str) -> str:
-    return body_text
+def _wrap_links_text(body_text: str, dispatch_id: str, tracking_secret: str) -> str:
+    if not body_text:
+        return ""
+        
+    api_base = _get_api_base()
+    
+    def replacer(match):
+        url = match.group(1)
+        
+        if "/unsubscribe" in url or "/track/" in url or "mailto:" in url:
+            return url
+            
+        encoded_url = base64.urlsafe_b64encode(url.encode()).decode().rstrip("=")
+        base_str = f"{dispatch_id}:{encoded_url}"
+        sig = hmac.new(tracking_secret.encode(), base_str.encode(), hashlib.sha256).hexdigest()
+        
+        return f"{api_base}/track/click?d={dispatch_id}&u={encoded_url}&s={sig}"
+        
+    pattern = re.compile(r'(https?://[^\s<>"]+)', re.IGNORECASE)
+    return pattern.sub(replacer, body_text)
 
 def _inject_honeypot(body_html: str, dispatch_id: str, tracking_secret: str) -> str:
     hp_dest = "https://example.com/ignore"
@@ -471,6 +517,7 @@ class EmailHandler:
 
                 tenant_footer_text = " &bull; ".join(footer_parts) if footer_parts else None
 
+                body_html = _wrap_links(body_html, str(dispatch_id), self.tracking_secret)
                 body_html = _inject_email_footer(
                     body_html,
                     contact_data["id"],
@@ -479,6 +526,7 @@ class EmailHandler:
                     tenant_footer_text=tenant_footer_text
                 )
                 body_html = _inject_tracking_pixel(body_html, str(dispatch_id), self.tracking_secret)
+                body_html = _inject_honeypot(body_html, str(dispatch_id), self.tracking_secret)
 
                 # 8. Build From Address from Campaign Sender Identity (not recipient domain!)
                 smtp_host = os.getenv("SMTP_HOST", "email-smtp.ap-southeast-2.amazonaws.com")

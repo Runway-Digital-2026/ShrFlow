@@ -228,6 +228,8 @@ services:
       - "localhost:host-gateway"
     env_file:
       - .env
+    environment:
+      - HOSTNAME=0.0.0.0
     depends_on:
       - api
     networks:

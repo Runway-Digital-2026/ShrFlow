@@ -260,20 +260,69 @@ async def handle_bounce(request: Request):
         return {"status": "ignored", "reason": "missing_tenant_id"}
 
     bounce_type = body.get("type", "hard").lower()
-    if "soft" in bounce_type or "temporary" in bounce_type:
-        logger.info(f"[WEBHOOK] Soft bounce for {email} — skipping suppression.")
-        return {"status": "ignored", "reason": "soft_bounce"}
+    is_soft = "soft" in bounce_type or "temporary" in bounce_type
     bounce_reason_detail = body.get("reason", bounce_type)
-    _suppress_contact(email, "bounce", tenant_id=tenant_id, bounce_reason=bounce_reason_detail)
+
+    if not is_soft:
+        _suppress_contact(email, "bounce", tenant_id=tenant_id, bounce_reason=bounce_reason_detail)
     
+    # Try to resolve campaign_id, dispatch_id, and contact_id
+    campaign_id = body.get("campaign_id")
+    dispatch_id = body.get("dispatch_id")
+    contact_id = None
+
+    if dispatch_id:
+        try:
+            disp_res = db.client.table("campaign_dispatch")\
+                .select("campaign_id, subscriber_id")\
+                .eq("id", dispatch_id)\
+                .execute()
+            if disp_res.data:
+                campaign_id = disp_res.data[0]["campaign_id"]
+                contact_id = disp_res.data[0]["subscriber_id"]
+        except Exception as e:
+            logger.error(f"[WEBHOOK] Failed to resolve dispatch details: {e}")
+
+    if not contact_id and email and tenant_id:
+        try:
+            contact_res = db.client.table("contacts")\
+                .select("id")\
+                .eq("email", email)\
+                .eq("tenant_id", tenant_id)\
+                .execute()
+            if contact_res.data:
+                contact_id = contact_res.data[0]["id"]
+        except Exception as e:
+            logger.error(f"[WEBHOOK] Failed to resolve contact by email: {e}")
+
+    # Log to email_events if we have tenant_id and campaign_id
+    if tenant_id and campaign_id:
+        try:
+            db.client.table("email_events").insert({
+                "tenant_id": tenant_id,
+                "campaign_id": campaign_id,
+                "dispatch_id": dispatch_id,
+                "contact_id": contact_id,
+                "event_type": "bounce",
+                "bounce_type": "soft" if is_soft else "hard",
+                "bounce_reason": bounce_reason_detail,
+                "source": "generic"
+            }).execute()
+        except Exception as e:
+            logger.error(f"[WEBHOOK] Failed to log generic bounce to email_events: {e}")
+
     # Audit log
     audit_repo.insert_log(
-        tenant_id="SYSTEM", # Generic endpoint doesn't know tenant yet
+        tenant_id=tenant_id or "SYSTEM",
         action="webhook.bounce",
         resource_type="contact",
-        metadata={"email": email, "reason": bounce_reason_detail, "provider": "generic"}
+        metadata={"email": email, "reason": bounce_reason_detail, "provider": "generic", "type": bounce_type}
     )
     
+    if is_soft:
+        logger.info(f"[WEBHOOK] Soft bounce logged for {email} — skipping suppression.")
+        return {"status": "ok", "action": "soft_bounce_logged", "email": email}
+
     return {"status": "ok", "action": "contact_marked_bounced", "email": email}
 
 
@@ -366,6 +415,44 @@ async def handle_ses_webhook(
         )
         tenant_id: Optional[str] = tags.get("tenant_id") or None
 
+        # Resolve dispatch_id from Message-ID in headers
+        dispatch_id = None
+        common_headers = mail.get("commonHeaders", {})
+        msg_id_header = common_headers.get("messageId")
+        if not msg_id_header:
+            for h in mail.get("headers", []):
+                if h.get("name", "").lower() == "message-id":
+                    msg_id_header = h.get("value")
+                    break
+        
+        if msg_id_header:
+            match = re.search(r"<([^>@]+)@emailengine\.app>", msg_id_header)
+            if match:
+                dispatch_id = match.group(1)
+
+        campaign_id = None
+        contact_id = None
+        
+        if dispatch_id:
+            try:
+                disp_res = db.client.table("campaign_dispatch")\
+                    .select("campaign_id, subscriber_id")\
+                    .eq("id", dispatch_id)\
+                    .execute()
+                if disp_res.data:
+                    campaign_id = disp_res.data[0]["campaign_id"]
+                    contact_id = disp_res.data[0]["subscriber_id"]
+                    
+                    if not tenant_id:
+                        camp_res = db.client.table("campaigns")\
+                            .select("tenant_id")\
+                            .eq("id", campaign_id)\
+                            .execute()
+                        if camp_res.data:
+                            tenant_id = camp_res.data[0]["tenant_id"]
+            except Exception as e:
+                logger.error(f"[SES] Failed to resolve dispatch/campaign details: {e}")
+
         if event_type == "Bounce":
             bounce = message.get("bounce", {})
             bounce_type = bounce.get("bounceType", "").lower()       # permanent | transient | undetermined
@@ -378,6 +465,20 @@ async def handle_ses_webhook(
                     continue
                 diag_code = r.get("diagnosticCode", "")
                 b_reason = f"{bounce_sub} - {diag_code}" if diag_code else bounce_sub
+
+                # Resolve contact_id from email if not already resolved
+                loop_contact_id = contact_id
+                if not loop_contact_id and email and tenant_id:
+                    try:
+                        contact_res = db.client.table("contacts")\
+                            .select("id")\
+                            .eq("email", email)\
+                            .eq("tenant_id", tenant_id)\
+                            .execute()
+                        if contact_res.data:
+                            loop_contact_id = contact_res.data[0]["id"]
+                    except Exception as e:
+                        logger.error(f"[SES] Failed to resolve contact by email {email}: {e}")
 
                 if bounce_type == "permanent":
                     # Permanent: NoEmail, MailboxDoesNotExist, etc. → immediate suppress
@@ -399,6 +500,23 @@ async def handle_ses_webhook(
                     logger.warning(
                         f"[SES] Undetermined bounce type for {email} [{bounce_sub}] — logging only"
                     )
+
+                # Log bounce event to email_events
+                if tenant_id and campaign_id:
+                    try:
+                        db.client.table("email_events").insert({
+                            "tenant_id": tenant_id,
+                            "campaign_id": campaign_id,
+                            "dispatch_id": dispatch_id,
+                            "contact_id": loop_contact_id,
+                            "event_type": "bounce",
+                            "bounce_type": "hard" if bounce_type == "permanent" else "soft",
+                            "bounce_reason": b_reason,
+                            "source": "ses"
+                        }).execute()
+                        logger.info(f"[SES] Logged bounce event to email_events for {email}")
+                    except Exception as e:
+                        logger.error(f"[SES] Failed to log bounce event to email_events for {email}: {e}")
 
         elif event_type == "Complaint":
             complaint = message.get("complaint", {})
