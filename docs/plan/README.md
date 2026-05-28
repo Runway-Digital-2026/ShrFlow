@@ -16,7 +16,7 @@ If you are onboarding to ShrFlow, use these sections before coming back here:
 | Section | Purpose |
 |-------|---------|
 | [Strategic Overview](overview.md) | Architecture-level planning and long-range system thinking |
-| <a href="https://github.com/Rahul-pamula/ShrFlow/blob/main/docs/plan/phase_wise_plan.md" target="_blank" rel="noopener">Phase Roadmap</a> | Full implementation roadmap and sequencing in GitHub Markdown view |
+| <a href="https://github.com/runway-digital-2026/ShrFlow/blob/main/docs/plan/phase_wise_plan.md" target="_blank" rel="noopener">Phase Roadmap</a> | Full implementation roadmap and sequencing in GitHub Markdown view |
 | [Client Requirements](client_req.md) | Requirement capture, research, and comparison notes |
 | [Phase Library](phases/README.md) | Detailed per-phase implementation documents |
 | [Audit Library](audits/README.md) | Technical audit documents grouped by phase |

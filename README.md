@@ -31,7 +31,7 @@ It combines a Next.js product UI, a FastAPI backend, asynchronous workers, Rabbi
 - Introduction: [docs/introduction.md](docs/introduction.md)
 - Quick start: [docs/getting-started/quick-start.md](docs/getting-started/quick-start.md)
 - Product tour: [docs/screen-shots/README.md](docs/screen-shots/README.md)
-- Live docs site: [rahul-pamula.github.io/ShrFlow](https://rahul-pamula.github.io/ShrFlow/)
+- Live docs site: [runway-digital-2026.github.io/ShrFlow](https://runway-digital-2026.github.io/ShrFlow/)
 
 ## Stack
 

@@ -2,8 +2,6 @@
 
 > This document is the **strategic planning guide** for the Email Engine platform.
 > It describes what each phase is, why it exists, what it covers, and the technical architecture behind it.
-> Progress tracking (what is done vs. pending) lives in the **interactive HTML tracker** (`docs/progress.html`).
-> Live URL: https://rahul-pamula.github.io/ShrFlow/progress.html (redirect available at https://rahulpamula.me/ShrFlow/)
 
 Each phase is divided into TWO parts:
   [BACKEND] — API, database, worker logic
