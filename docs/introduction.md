@@ -9,25 +9,25 @@ ShrFlow is an enterprise-grade, self-hosted email marketing platform built on Ne
 ## What ShrFlow Does
 
 <div class="card-grid">
-  <a class="card" href="#/getting-started/quick-start">
+  <a class="card" href="getting-started/quick-start.md">
     <div class="card-icon">🚀</div>
     <div class="card-title">Quick Start</div>
     <div class="card-desc">Launch your local dev cluster and send your first campaign in under 10 minutes.</div>
     <div class="card-arrow">Get started →</div>
   </a>
-  <a class="card" href="#/api-reference/authentication">
+  <a class="card" href="api-reference/authentication.md">
     <div class="card-icon">📡</div>
     <div class="card-title">API Reference</div>
     <div class="card-desc">Integrate ShrFlow into your products using the full REST API.</div>
     <div class="card-arrow">View API →</div>
   </a>
-  <a class="card" href="#/advanced/deliverability-engine">
+  <a class="card" href="advanced/deliverability-engine.md">
     <div class="card-icon">⚙️</div>
     <div class="card-title">Delivery Engine</div>
     <div class="card-desc">Dual-path dispatch with RabbitMQ for guaranteed, high-throughput delivery.</div>
     <div class="card-arrow">Learn more →</div>
   </a>
-  <a class="card" href="#/advanced/webhooks">
+  <a class="card" href="advanced/webhooks.md">
     <div class="card-icon">🔗</div>
     <div class="card-title">Webhooks & Events</div>
     <div class="card-desc">Stream real-time email events — opens, clicks, bounces, and complaints.</div>

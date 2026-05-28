@@ -6,8 +6,8 @@
   <h1>Documentation built for product understanding, not file hunting.</h1>
   <p class="hero-desc">ShrFlow is a multi-tenant email platform for teams that want control over delivery, tenancy, infrastructure, and operations. This documentation is organized to help you understand the product quickly, get it running, and go deeper only when you need to.</p>
   <div class="hero-btns">
-    <a class="btn btn-primary" href="#/getting-started/quick-start">Start with Quick Start</a>
-    <a class="btn btn-outline" href="#/screen-shots/README">Take the Product Tour</a>
+    <a class="btn btn-primary" href="getting-started/quick-start.md">Start with Quick Start</a>
+    <a class="btn btn-outline" href="screen-shots/README.md">Take the Product Tour</a>
   </div>
   <div class="hero-pills">
     <span class="pill">Next.js 14</span>
@@ -21,37 +21,37 @@
 ## Quick Navigation
 
 <div class="card-grid">
-  <a class="card" href="#/getting-started/quick-start">
+  <a class="card" href="getting-started/quick-start.md">
     <div class="card-icon">🚀</div>
     <div class="card-title">Quick Start</div>
     <div class="card-desc">Bring the local stack up fast and understand the minimum setup path.</div>
     <div class="card-arrow">Open setup guide →</div>
   </a>
-  <a class="card" href="#/introduction">
+  <a class="card" href="introduction.md">
     <div class="card-icon">📖</div>
     <div class="card-title">Introduction</div>
     <div class="card-desc">Get the platform story, architecture snapshot, and core product principles.</div>
     <div class="card-arrow">Read the overview →</div>
   </a>
-  <a class="card" href="#/screen-shots/README">
+  <a class="card" href="screen-shots/README.md">
     <div class="card-icon">🖼️</div>
     <div class="card-title">Product Tour</div>
     <div class="card-desc">Walk through the main screens with routes and context, grouped by workflow.</div>
     <div class="card-arrow">Browse screenshots →</div>
   </a>
-  <a class="card" href="#/getting-started/first-campaign">
+  <a class="card" href="getting-started/first-campaign.md">
     <div class="card-icon">📧</div>
     <div class="card-title">First Campaign</div>
     <div class="card-desc">Follow the main operational journey from setup to sending.</div>
     <div class="card-arrow">Send your first campaign →</div>
   </a>
-  <a class="card" href="#/advanced/deliverability-engine">
+  <a class="card" href="advanced/deliverability-engine.md">
     <div class="card-icon">⚙️</div>
     <div class="card-title">Architecture</div>
     <div class="card-desc">Explore how the delivery engine, tenancy model, and infrastructure fit together.</div>
     <div class="card-arrow">View architecture docs →</div>
   </a>
-  <a class="card" href="#/api-reference/authentication">
+  <a class="card" href="api-reference/authentication.md">
     <div class="card-icon">📡</div>
     <div class="card-title">API Reference</div>
     <div class="card-desc">Jump into authentication, campaign, and contacts endpoints.</div>
@@ -65,12 +65,12 @@
   <div class="journey-card">
     <div class="journey-kicker">New to ShrFlow</div>
     <h3>Understand the product first</h3>
-    <p>Read <a href="#/introduction">Introduction</a>, then take the <a href="#/screen-shots/README">Product Tour</a> so the codebase and routes have context before you read implementation details.</p>
+    <p>Read <a href="introduction.md">Introduction</a>, then take the <a href="screen-shots/README.md">Product Tour</a> so the codebase and routes have context before you read implementation details.</p>
   </div>
   <div class="journey-card">
     <div class="journey-kicker">Setting up locally</div>
     <h3>Get to a working environment quickly</h3>
-    <p>Use <a href="#/getting-started/quick-start">Quick Start</a>, verify sending with <a href="#/getting-started/verify-domain">Domain Verification</a>, and then continue to <a href="#/getting-started/first-campaign">First Campaign</a>.</p>
+    <p>Use <a href="getting-started/quick-start.md">Quick Start</a>, verify sending with <a href="getting-started/verify-domain.md">Domain Verification</a>, and then continue to <a href="getting-started/first-campaign.md">First Campaign</a>.</p>
   </div>
   <div class="journey-card">
     <div class="journey-kicker">Working on platform internals</div>

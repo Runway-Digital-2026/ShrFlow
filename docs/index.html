@@ -731,6 +731,25 @@ body::before{
 
           hook.init(function() {
             normalizeHomeRoute();
+
+            // Intercept relative markdown links in HTML elements for SPA routing
+            document.body.addEventListener('click', function(e) {
+              var a = e.target.closest('a');
+              if (a) {
+                var href = a.getAttribute('href');
+                if (href && !href.startsWith('http') && !href.startsWith('#') && href.endsWith('.md')) {
+                  e.preventDefault();
+                  var route = href.replace(/\.md$/, '');
+                  if (route.startsWith('./')) {
+                    route = route.slice(2);
+                  }
+                  if (route.startsWith('/')) {
+                    route = route.slice(1);
+                  }
+                  window.location.hash = '#/' + route;
+                }
+              }
+            });
           });
 
           hook.doneEach(function() {
