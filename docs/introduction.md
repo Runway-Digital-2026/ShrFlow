@@ -85,8 +85,10 @@ ShrFlow is fully containerized, stateless at the edge, and built for horizontal 
 |-----------|-----------|---------|
 | Frontend | Next.js 14 (App Router) | Campaign management dashboard |
 | Backend | FastAPI (Python 3.11) | REST API + business logic |
-| Queue | RabbitMQ | Async email dispatch |
+| Queue | RabbitMQ | Async email dispatch & embedding tasks |
 | Database | PostgreSQL via Supabase | Multi-tenant data store |
+| Vector Storage | pgvector / Pinecone | High-dimensional embedding storage for campaign analytics |
+| Local Inference | Ollama / llama.cpp | On-premise 1.5B LLM context routing and RAG synthesis |
 | Auth | Supabase Auth | JWT authentication + RLS |
 | Storage | Supabase Storage | Template assets |
 | Containers | Docker Compose | Local + production orchestration |

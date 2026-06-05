@@ -10,6 +10,7 @@
 
 * **Architecture & Operations**
   * [Delivery Engine](advanced/deliverability-engine.md)
+  * [AI & RAG Intelligence](advanced/ai-rag-architecture.md)
   * [Webhooks & Events](advanced/webhooks.md)
   * [RBAC & Security](advanced/rbac-security.md)
   * [Database RLS](advanced/database-rls.md)
