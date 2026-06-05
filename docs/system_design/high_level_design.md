@@ -161,94 +161,209 @@ An automated Cron service runs on the database (via pg_cron or worker scheduler)
 
 ---
 
-## 5. API Layer & Idempotency
+## 5. API Gateway & Integrations Layer
 
-To prevent race conditions, duplicate submissions, and API resource leaks, a strict idempotency layer is implemented.
+The API gateway manages secure communication with both internal clients and external services.
 
-### 5.1. Redis-Based Idempotency Layer
-Any write operations (e.g., creating a contact, sending a campaign, processing a charge) can include an `Idempotency-Key` header:
-1.  **Check Key:** The API Gateway receives the key and checks Redis:
-    ```python
-    lock_acquired = await redis.set(f"idempotency:{key}", "IN_PROGRESS", nx=True, ex=300)
+### 5.1. Inbound REST API & Webhooks Ingestion
+*   **Interactive Documentation:** Exposes live OpenAPI/Swagger schemas.
+*   **CRM Integrations:** Open REST routes allow external CRMs or lead forms to ingest contacts in real time (`POST /v1/contacts`).
+*   **Low-Latency Authentication:** Inbound API keys are validated using a cached hash dictionary inside Redis to eliminate SQL roundtrips on high-volume inbound hooks.
+
+### 5.2. Outbound Webhook Dispatcher
+*   **Event Publisher:** Automatically broadcasts events (`email.delivered`, `email.opened`, `email.clicked`, `email.bounced`, `email.complained`, `contact.unsubscribed`) to registered third-party endpoints.
+*   **Security Signatures:** Webhook payloads include two headers to verify authenticity and prevent replay attacks:
+    *   `ShrFlow-Signature`: The HMAC-SHA256 signature generated using a unique endpoint secret.
+    *   `ShrFlow-Timestamp`: The Unix timestamp of the event dispatch (validated against a 5-minute replay window).
+
+---
+
+## 6. Tenancy & Data Isolation (Row-Level Security)
+
+ShrFlow operates under a **shared-database, shared-schema** model. Data from all tenants resides in the same database tables, but data boundaries are strictly isolated using PostgreSQL RLS.
+
+### Transaction-Scoped Isolation Flow
+
+```
+[API Request with JWT] ──► [Extract tenant_id] ──► [Connection Pool (asyncpg)] 
+                                                               │
+                                                               ▼
+[Postgres RLS Filters Applied] ◄── [Set Local Transaction Context]
+```
+
+1.  **Extract JWT Context:** The API gateway extracts the `tenant_id` from the request JWT headers.
+2.  **Transaction Initialization:** The connection pool (`asyncpg`) retrieves a connection and immediately executes:
+    ```sql
+    SET LOCAL app.current_tenant_id = 'tenant-uuid';
     ```
-2.  **Reject Duplicate:** If `lock_acquired` is False, the API returns `409 Conflict` (if state is still in progress) or the cached response if the execution is already complete.
-3.  **Commit Response:** Upon successful execution, the worker saves the HTTP status and JSON response body to Redis under the same key.
-
-### 5.2. Webhook Security & Signature Verification
-Outgoing and incoming webhooks utilize HMAC-SHA256 signature verification.
-*   **Signatures:** Payloads include a `ShrFlow-Signature` (SHA256 hash of `Timestamp + Payload` signed with the endpoint secret) and `ShrFlow-Timestamp`.
-*   **Validation:** Receivers must verify the signature matches and that the timestamp is within 5 minutes of local system time to prevent replay attacks.
-
----
-
-## 6. Delivery Engine (Core System)
-
-The delivery engine separates high-volume campaign sends from time-sensitive system notifications to maximize inbox deliverability.
-
-### 6.1. System vs Campaign Routing Paths
-*   **System Emails Path:** Routes OTPs, team invites, and password resets via high-reputation shared servers (e.g., Google Workspace SMTP during development, transitioning to dedicated transactional AWS SES routes).
-*   **Campaign Emails Path:** Routes newsletters and promotions via verified tenant domains (e.g., `mail.tenantdomain.com` mapped to AWS SES). This isolates deliverability risks per tenant.
-
-### 6.2. Deliverability Reputation & Spam Ingestion
-*   **AWS SES Feedback Loop (FBL):** Webhooks from AWS SES capture bounces and complaints. Bounces are parsed for classification:
-    *   *Hard Bounces:* (`MailboxDoesNotExist`, `Permanent`) trigger immediate suppression (`status = 'bounced'`).
-    *   *Soft Bounces:* (`MailboxFull`, `Transient`) trigger up to 3 retries over 24 hours.
-    *   *Spam Complaints:* Trigger immediate unsubscription (`status = 'unsubscribed'`).
-*   **Warmup Automation:** The system automatically throttles a new domain's sending rate over 30 days, staving off ISP spam triggers.
+3.  **RLS Evaluation:** When database queries run, the PostgreSQL engine filters rows according to the table's tenant policy:
+    ```sql
+    CREATE POLICY tenant_isolation_policy ON campaigns
+    USING (tenant_id = current_setting('app.current_tenant_id')::uuid)
+    WITH CHECK (tenant_id = current_setting('app.current_tenant_id')::uuid);
+    ```
+    If `app.current_tenant_id` is empty or incorrect, the database returns empty results, preventing application bugs from exposing cross-tenant data.
 
 ---
 
-## 7. Asynchronous Workflows
+## 7. Role-Based Access Control (RBAC)
 
-ShrFlow relies on decoupled worker processes to ingest data and execute campaigns without blocking the web application.
+Every request within a workspace is verified against granular role permissions. Roles are stored in `tenant_users`.
 
-### 7.1. Chunked Ingestion Workflow (S3-to-Postgres)
+| Feature / Permission | Owner | Admin | Creator | Viewer |
+| :--- | :---: | :---: | :---: | :---: |
+| **Workspace Settings & Billing** | ✅ | ❌ | ❌ | ❌ |
+| **Delete Workspace** | ✅ | ❌ | ❌ | ❌ |
+| **Invite & Manage Members** | ✅ | ✅ | ❌ | ❌ |
+| **Export Contacts / Lists** | ✅ | ✅ | ❌ | ❌ |
+| **Send/Trigger Campaigns** | ✅ | ✅ | ❌ | ❌ |
+| **Create/Edit Templates** | ✅ | ✅ | ✅ | ❌ |
+| **View Analytics & Dashboards** | ✅ | ✅ | ✅ | ✅ |
 
-```
-[Client] ──► Presigned URL ──► [S3/MinIO Storage]
-                                      │
-  ┌───────────────────────────────────┘
-  ▼
-[FastAPI] ──► Queue Task ──► [RabbitMQ] ──► [Import Worker]
-                                                   │
-                                                   ▼
-                                         [Stream & Ingest Chunks]
-                                          (OOM Safe Ingestion)
-```
-
-1.  **Direct-to-Storage Upload:** The client requests a presigned URL and uploads the CSV/XLSX file directly to object storage (AWS S3 or MinIO). This prevents the API container from running out of memory.
-2.  **AMQP Signaling:** The API gateway sends a message containing the object storage file key to the `import_tasks` RabbitMQ queue.
-3.  **Streamed Parsing:** The worker streams the file from object storage, parsing it in chunks of 500 rows. It validates data structures and inserts rows using Postgres bulk copy methods, preventing OOM issues.
-
-### 7.2. Campaign Execution Pipeline
-*   **Snapshotting:** At the moment of send, the system copies the template HTML and variables into an immutable database snapshot.
-*   **Cursor-Based Streaming:** Recipient lists are streamed from the database using server-side cursors in batches of 1,000, preventing memory overflows on high-volume campaigns.
-*   **Kill Switch Check:** Before dispatching each batch, the worker queries Redis for a campaign kill-key (`tenant:{id}:campaign:{cid}:stop`). If set, the campaign halts instantly.
+### Enforcement Architecture
+*   **Backend Enforcer:** API routes use FastAPI dependencies (e.g., `require_permission("campaign:send")`) to decode the JWT context, matching the active tenant user's role against a rigid permission-to-role database dictionary.
+*   **Frontend Enforcer:** The global Next.js layout exposes a `can(user, action)` utility mapping to conditional rendering structures, disabling or hiding buttons for unauthorized users.
 
 ---
 
-## 8. Private AI System
+## 8. Dual-Path Email Deliverability Engine
 
-ShrFlow includes a local, private RAG (Retrieval-Augmented Generation) pipeline that lets tenants draft content and debug delivery errors without sending data to public AI API providers.
+To safeguard sender reputation and guarantee immediate transactional delivery, email sending paths are physically and logically segregated.
 
-### 8.1. Two-Stage Local RAG Pipeline
-
+```text
+ ┌────────────────────────────────────────────────────────┐
+ │       DUAL-PATH EMAIL DELIVERABILITY ARCHITECTURE      │
+ └───────────────────────────┬────────────────────────────┘
+                             │
+     ┌───────────────────────┴───────────────────────┐
+     ▼                                               ▼
+┌─────────────────────────────┐               ┌─────────────────────────────┐
+│ 1. SYSTEM PATH (SMTP - Temp)│               │ 2. CAMPAIGN PATH (AWS SES)  │
+├─────────────────────────────┤               ├─────────────────────────────┤
+│  [ Auth / System Actions ]  │               │  [ Campaign Orchestrator ]  │
+│              │              │               │              │              │
+│              ▼              │               │              ▼              │
+│       [ System Queue ]      │               │     [ Campaign Queue ]      │
+│              │              │               │              │              │
+│              ▼              │               │              ▼              │
+│      [ System Worker ]      │               │      [ Tenant Worker ]      │
+│              │              │               │              │              │
+│              ▼              │               │              ▼              │
+│    shrmail.app@gmail.com    │               │   Tenant Verified Domain    │
+└─────────────────────────────┘               └─────────────────────────────┘
 ```
-User Query ──► [1.5B LLM (Tool Router)] ──► MCP Server (Local DB/Logs) ──► JSON Context ──► [1.5B LLM (Synthesizer)] ──► Answer
-```
 
-1.  **Routing (Stage 1):** The user's prompt is processed by a local 1.5B parameter LLM (e.g., Qwen-2.5-1.5B-Instruct). The model selects the most relevant tool (e.g., query database or search templates) and outputs a JSON tool call request.
-2.  **MCP Execution:** The system runs the tool locally on the **FastMCP Server**, querying the database, checking `pgvector` tables, or tailing logs, returning the results as JSON.
-3.  **Synthesis (Stage 2):** The retrieved JSON is formatted and appended to the user's query. The 1.5B model generates the final, grounded response.
+### 8.1. System / Transactional Flow
+*   **Purpose:** OTPs, team invites, and password resets.
+*   **Route:** Shared system credentials utilizing `shrmail.app@gmail.com` via **Gmail SMTP** (Temporary solution for development/testing).
+*   **Production Migration Path:** The Gmail SMTP route is temporary due to Gmail's daily sending limits (~2,000 emails/day limit on Workspace). The production configuration will migrate system emails to AWS SES (`mail.shrflow.app`).
+*   **Advantage:** Fast, guaranteed inbox landing with high default trust for critical notifications during development.
 
-### 8.2. Token Optimization & Resource Scaling
-*   **Token Optimization:** Prompt sizes are reduced by stripping unused columns and metadata from the JSON context before passing it to the model. Vector retrieval is restricted to the top-3 results.
-*   **Stateless Inference Nodes:** The LLM runs in a separate stateless container (using Ollama or vLLM). Replicas can scale horizontally independent of the core web servers.
-*   **Model Quantization:** Uses 4-bit quantized GGUF/AWQ models, keeping memory usage under 1.2 GB RAM for easy deployment on mixed CPU/GPU instances.
+### 8.2. Campaign / Marketing Flow
+*   **Purpose:** Newsletters, promotional bulk emails.
+*   **Route:** Sent via **AWS SES** using custom domain identities verified by the tenant (e.g., `promos.tenant.com`).
+*   **Isolation:** Sender reputation resides with the tenant domain. A spam complaint against one tenant does not degrade the reputation of another tenant or the platform's transactional SMTP.
+*   **Reputation Loop:** Automated SNS handlers consume AWS bounce and complaint webhooks, instantly updating the tenant's suppression list to block future sends to problematic addresses.
+
+### 8.3. Rate Limiting & Warmup Throttling
+*   **Token Bucket Rate Limiter:** A Redis-backed token bucket (`tenant:{id}:send_tokens`) tracks campaign sending rates according to the workspace plan. The worker checks this bucket before sending any email.
+*   **Warmup Automation:** Outbound rates for new verified domains are incrementally increased over a 30-day window to build trust with ISP inbox filters.
+*   **Bounce Classification Handler:** Bounces are classified dynamically:
+    *   *Hard Bounces:* (`MailboxDoesNotExist`, `Permanent`) trigger immediate suppression.
+    *   *Soft Bounces:* (`MailboxFull`, `Transient`) are retried up to 3 times over 24 hours with exponential backoffs.
 
 ---
 
-## 9. System Audit
+## 9. High-Scale Asynchronous Workflows
+
+### 9.1. Audience Contacts Import Workflow
+1.  **Initialize (`POST /import/initialize`):** Frontend requests a secure presigned upload URL from AWS S3/MinIO.
+2.  **Direct Upload:** The client uploads the CSV/XLSX file directly to Object Storage. This avoids running out of memory on the API server.
+3.  **Process Request (`POST /import/process`):** Frontend signals the backend to start import, which enqueues a parsing job to RabbitMQ.
+4.  **Worker Streaming:** A worker downloads the file in chunks of **500 rows**. It validates syntax and executes bulk PostgreSQL upserts, preventing large-file OOM conditions.
+5.  **Progress updates:** The worker posts progress ratios to Redis Pub/Sub, which is pushed to the client via WebSockets.
+
+### 9.2. High-Volume Campaign Dispatch Workflow
+1.  **Immutability Snapshot:** The system duplicates the current template markup and merge tags into a snapshot. This preserves integrity in case the template is edited mid-send.
+2.  **Concurrency Protection:** Optimistic locking using integer version increments on campaigns prevents race conditions where admins approve outdated drafts.
+3.  **Cursor-Based Querying:** Backend API retrieves recipient IDs using a server-side DB cursor in batches of **1,000**, streaming contacts into RabbitMQ.
+4.  **Worker Consumption & Kill Switch:** Workers process recipient items. Before sending, the worker queries Redis to ensure the campaign's kill-switch has not been triggered.
+5.  **SMTP Throttling:** Workers enforce recipient ISP rate limits and stagger sends to prevent IP blocks.
+
+---
+
+## 10. Artificial Intelligence & Advanced Analytics Engine
+
+To optimize campaign effectiveness and streamline developer operations, ShrFlow integrates a self-hosted, private AI and analytics pipeline spanning vector databases, developer tool bridging, and deep user-behavior modeling.
+
+### 10.1. Local RAG & Model Context Protocol (MCP) Framework
+To ensure strict privacy and allow self-hosted operations without external cloud dependencies, ShrFlow implements a lightweight, two-stage **Local LLM RAG Execution Pipeline** using an on-premise **1.5B Parameter Model** (e.g., Qwen-2.5-1.5B-Instruct running via llama.cpp or Ollama).
+
+#### Local RAG Execution Flow
+
+```
+                      ┌─────────────────────────────────┐
+                      │        User Query Input         │
+                      └────────────────┬────────────────┘
+                                       │
+                                       ▼
+                      ┌─────────────────────────────────┐
+                      │     1.5B LLM: Tool Router       │
+                      │ (Determines Intent & Tool Args) │
+                      └────────────────┬────────────────┘
+                                       │ Generates JSON Tool Call
+                                       ▼
+                      ┌─────────────────────────────────┐
+                      │         MCP Server Tool         │
+                      │ (Queries DB, pgvector, or Logs) │
+                      └────────────────┬────────────────┘
+                                       │ Returns Structured JSON Context
+                                       ▼
+                      ┌─────────────────────────────────┐
+                      │     1.5B LLM: Synthesizer       │
+                      │ (Translates Context to Answer)  │
+                      └────────────────┬────────────────┘
+                                       │
+                                       ▼
+                      ┌─────────────────────────────────┐
+                      │     Answer Returned to User     │
+                      └─────────────────────────────────┘
+```
+
+#### Detailed Execution Steps:
+1.  **Intent Parsing & Routing (Stage 1):** The user's query is fed to the local 1.5B model alongside a list of available MCP tool schemas. The model is constrained to generate a structured JSON tool call (e.g., selecting a DB inspector or vector search tool).
+2.  **MCP Tool Execution:** The system intercepts the tool call and runs it locally on the **FastMCP Server** (e.g., executing RLS-safe PostgreSQL queries or searching local logs).
+3.  **Synthesis & Grounding (Stage 2):** The retrieved raw JSON data is appended to the user's original query. The 1.5B model processes this combined prompt, translating the structured data into a plain-English, grounded response without hallucinations.
+
+### 10.2. Deep RAG Ingestion & Semantic Search
+*   **Vector Datastore:** Utilizes `pgvector` or Pinecone to store high-dimensional campaign content and performance embeddings.
+*   **Asynchronous Embedding Pipeline:** On campaign completion, a background task extracts successful email subject lines, body copy, and conversion metrics, indexing them in the vector store.
+*   **Semantic Search API:** Computes cosine-similarity queries for natural language prompts.
+*   **Features:**
+    *   **Global AI Assistant Widget:** Floating UI sidebar widget that reads campaign/template history to compose high-performing copy drafts using the Local RAG loop.
+    *   **Segment/Filter Generator:** Natural language inputs (e.g., *"Find users in California who clicked our last email"*) are converted directly into contacts database filters.
+    *   **Deliverability Explainer Modal:** Explains obscure SMTP bounce and complaint error codes in plain-English with actionable remediation steps.
+
+### 10.3. Advanced Intelligence & Behavioral Automation
+*   **Bayesian A/B/n Multi-Armed Bandit Testing:** Dynamically updates recipient sample split ratios based on live open-rate responses to automatically route traffic to the winning subject line.
+*   **Machine Learning Send-Time Optimization (STO):** Evaluates rolling 30-day interaction logs to predict and queue campaigns to execute during the peak open-hour of each individual contact.
+*   **Sunset Policies (Zombie Purges):** Scheduled workers track engagement signals and flag/suppress inactive subscribers (>90 days inactive) to protect the domain's reputation score.
+
+### 10.4. Token Optimization & Scaling Strategy
+To maintain low latency and operational efficiency on local servers:
+*   **Token Optimization Strategy:**
+    *   *Prompt Pruning:* System instructions are limited strictly to tool schemas and boundaries.
+    *   *Vector Ranking:* Semantic search queries limit database retrieval context to the top-K relevant results ($K=3$).
+    *   *JSON Compacting:* Unused database columns are stripped, and whitespace is removed from RAG context payloads.
+    *   *Context Truncation:* Strict length guards automatically prune older messages when the prompt approaches context limits.
+*   **Scaling Strategy:**
+    *   *Stateless Inference Nodes:* LLM serving containers (Ollama or vLLM) are scaled horizontally separate from database and web nodes.
+    *   *Asynchronous Queueing:* Expensive AI embedding tasks run asynchronously on separate RabbitMQ worker processes, safeguarding transactional delivery streams.
+    *   *Quantization:* GGUF/AWQ 4-bit model quantization reduces RAM requirements to ~1.2 GB, enabling deployment on minimal host environments.
+
+---
+
+## 11. System Audit
 
 An audit of the codebase and architecture reveals several critical risks that must be resolved before production deployment.
 
@@ -272,25 +387,25 @@ An audit of the codebase and architecture reveals several critical risks that mu
 
 ---
 
-## 10. Failure & Chaos Analysis
+## 12. Failure & Chaos Analysis
 
 This section simulates system-wide failures and defines recovery strategies to keep operations resilient.
 
-### 10.1. RabbitMQ Outage
+### 12.1. RabbitMQ Outage
 *   **System Behavior:** API gateway fails to enqueue campaign sends or CSV imports. Tasks fail with broker connection errors.
 *   **Recovery Strategy:** The API gateway catches connection exceptions and falls back to saving campaign actions locally to PostgreSQL in a `PENDING_RETRY` state. When RabbitMQ reconnects, a cron job reconciles and replays these actions.
 
-### 10.2. Redis Crash
+### 12.2. Redis Crash
 *   **System Behavior:** The scheduler fails to acquire locks, stopping campaign dispatches. Active campaigns cannot be paused because the kill-switch checks fail. Frontend WebSocket connections lose progress updates.
 *   **Recovery Strategy:** The system catches Redis failures and falls back to database-level locks (e.g., using `SELECT FOR UPDATE SKIP LOCKED` on the scheduled tasks table), keeping core dispatch operations running.
 
-### 10.3. Database Connection Exhaustion
+### 12.3. Database Connection Exhaustion
 *   **System Behavior:** API nodes return `500 Internal Server Error` as they fail to connect to the database. Workers stop processing tasks.
 *   **Recovery Strategy:** Implement connection pool throttling on the API nodes. Configure `asyncpg` to queue requests during connection spikes instead of failing immediately. Set hard limits on the pool size to prevent exceeding PostgreSQL's `max_connections` parameter.
 
 ---
 
-## 11. Performance & Cost Optimization
+## 13. Performance & Cost Optimization
 
 To keep infrastructure costs low, the following resource optimization patterns are applied:
 
@@ -300,55 +415,55 @@ To keep infrastructure costs low, the following resource optimization patterns a
 
 ---
 
-## 12. Future Roadmap (0 → 10x Scale)
+## 14. Future Roadmap (0 → 10x Scale)
 
 This roadmap outlines the changes required to scale the system from 10k users to 1M+ active users.
 
-```mermaid
-graph LR
-    A[10K Users: Active Setup] --> B[100K Users: Scale DB & Queues]
-    B --> C[1M+ Users: Enterprise Scale]
+```text
+┌─────────────────────────────┐      ┌─────────────────────────────┐      ┌─────────────────────────────┐
+│   10K Users: Active Setup   │ ───> │  100K Users: Scale DB/Queues│ ───> │ 1M+ Users: Enterprise Scale │
+└─────────────────────────────┘      └─────────────────────────────┘      └─────────────────────────────┘
 ```
 
-### 12.1. 10K Users (Active Setup)
+### 14.1. 10K Users (Active Setup)
 *   Deploy Next.js, FastAPI, RabbitMQ, and Redis on a single Docker Compose node.
 *   Use a managed PostgreSQL instance with basic RLS policies.
 *   Route all RAG queries to a single Ollama container using 4-bit quantized models.
 
-### 12.2. 100K Users (Horizontal Scaling)
+### 14.2. 100K Users (Horizontal Scaling)
 *   **Stateless Scaling:** Move Next.js and FastAPI gateway containers to an orchestrator like Kubernetes, scaling them behind an ingress load balancer.
 *   **Database Read Replicas:** Create PostgreSQL read replicas. Route analytics dashboards and list views to read-only nodes, leaving the primary database dedicated to writes.
 *   **Separate Redis Pools:** Split Redis into two separate instances: one dedicated to caching and rate-limiting, and the other to WebSockets and scheduler locks.
 
-### 12.3. M+ Users (Enterprise Architecture)
+### 14.3. 1M+ Users (Enterprise Architecture)
 *   **Kafka Migration:** Replace RabbitMQ with Apache Kafka to support high-throughput, persistent event streams for billions of monthly email telemetry events.
 *   **Database Sharding:** Implement database sharding (using tools like Citus Data) to distribute PostgreSQL tables horizontally by `tenant_id`.
 *   **Dedicated AI Inference Clusters:** Move LLM serving to a dedicated GPU cluster running vLLM with automated request queuing and dynamic batching.
 
 ---
 
-## 13. Observability & Monitoring
+## 15. Observability & Monitoring
 
 ShrFlow implements a unified observability stack to monitor high-volume dispatches and diagnose issues across microservices.
 
-### 13.1. Unified Logging Architecture
+### 15.1. Unified Logging Architecture
 *   **Structured Output:** Every service outputs structured JSON logs via the `structlog` package to stdout/stderr.
 *   **Correlation & Trace Propagation:** Inbound HTTP requests are assigned a unique `x-correlation-id` UUID header. This ID is passed to RabbitMQ headers during enqueue actions, allowing background workers to append the same ID to their log contexts.
 *   **Tenant Context Logging:** Every log entry originating from a request or task context automatically includes `tenant_id` and `user_id` flags.
 
-### 13.2. Metrics & Telemetry
+### 15.2. Metrics & Telemetry
 A Prometheus exporter exposes system-level metrics on `/metrics`:
 *   **API Latency:** p50, p95, and p99 request duration buckets.
 *   **Queue Lag:** Real-time message depth per RabbitMQ queue (polled from the RabbitMQ management API).
 *   **Worker Throughput:** Emails sent per minute, parsed by provider (Gmail/SES) and status (Success/Bounce).
 *   **DB Latency:** Query execution times tracked via PostgreSQL `pg_stat_statements`.
 
-### 13.3. End-to-End Tracing (OpenTelemetry)
+### 15.3. End-to-End Tracing (OpenTelemetry)
 *   **Trace Flow:** OpenTelemetry traces span Frontend HTTP requests $\rightarrow$ FastAPI endpoint processing $\rightarrow$ RabbitMQ message enqueueing $\rightarrow$ Worker consumption $\rightarrow$ Database execution.
 *   **Failed Campaign Debugging:** An operator can query the `correlation_id` of a campaign in Jaeger/Grafana Tempo to track the exact lifecycle of the dispatch, identifying whether delays occurred in the database cursor stream, RabbitMQ broker, or the outbound SES API.
 *   **Tracing Single Email Lifecycles:** The unique transactional ID is embedded as a custom header (`X-ShrFlow-Task-ID`) in the outgoing email. Incoming SES bounce or complaint webhooks return this header, completing the trace.
 
-### 13.4. Alerting & Dashboards
+### 15.4. Alerting & Dashboards
 *   **Grafana Dashboards:** Exposes dashboards for **System Health** (CPU/RAM, thread counts), **Campaign Progress** (dispatch ETAs, bounce rates), and **Tenant Governance** (quota consumption).
 *   **Alert Thresholds:**
     *   *System CPU:* >80% for 5 minutes $\rightarrow$ Warning.
@@ -358,26 +473,26 @@ A Prometheus exporter exposes system-level metrics on `/metrics`:
 
 ---
 
-## 14. Deployment & DevOps Architecture
+## 16. Deployment & DevOps Architecture
 
 ShrFlow is built for cloud-native orchestration with zero-downtime deployment guarantees.
 
-### 14.1. Environment Strategy
+### 16.1. Environment Strategy
 *   **Development:** Local development environment run via Docker Compose.
 *   **Staging:** Single-zone Kubernetes namespace mimicking production configuration with scaled-down resources.
 *   **Production:** Multi-AZ Kubernetes cluster (AWS EKS or GCP GKE) with managed databases (RDS Aurora PostgreSQL) and cache clusters (Elasticache Redis).
 
-### 14.2. CI/CD Pipeline & Rollback Actions
+### 16.2. CI/CD Pipeline & Rollback Actions
 *   **Workflow:** Code push $\rightarrow$ Linter execution $\rightarrow$ Unit & Integration testing $\rightarrow$ Docker image compilation $\rightarrow$ Image push to private registry (ECR) $\rightarrow$ ArgoCD deployment sync.
 *   **Rollback Strategy:** If deployment health checks fail, the router is rolled back. Zero-downtime database migrations use the **Expand/Contract Pattern**, meaning newer database schema schemas are backward compatible with the older version of the codebase.
 
-### 14.3. Configuration & Secrets Management
+### 16.3. Configuration & Secrets Management
 *   **Secrets Engine:** Applications consume runtime secrets (database credentials, SMTP keys, AWS credentials) injected dynamically into container memory via HashiCorp Vault or AWS Secrets Manager.
 *   **Config Management:** Static configuration is managed via standard environment variables mapped to Kubernetes config maps.
 
 ---
 
-## 15. Internal Service Communication Security
+## 17. Internal Service Communication Security
 
 Security is configured at the transport and authentication layer of each internal service boundary.
 
@@ -388,18 +503,18 @@ Security is configured at the transport and authentication layer of each interna
 
 ---
 
-## 16. Tenant Quotas & Resource Governance
+## 18. Tenant Quotas & Resource Governance
 
 To ensure system stability, resource limits are enforced using token buckets and strict billing hooks.
 
-### 16.1. Per-Tenant Limits
+### 18.1. Per-Tenant Limits
 *   **Rate Limits:** REST API routes rate limit users via a Redis Token Bucket algorithm. Over-quota requests return a `429 Too Many Requests` response.
 *   **Plan Quotas:** Daily sending limits, template storage capacities, and AI prompt allocations are stored in PostgreSQL and cached in Redis.
 *   **Fair Usage Queuing:** Background campaign dispatches are sliced into small worker tasks (1,000 recipients per task). If a tenant exceeds their daily quota mid-campaign, the scheduler automatically pauses the campaign state and sends a notification.
 
 ---
 
-## 17. Load Testing & Capacity Planning
+## 19. Load Testing & Capacity Planning
 
 Capacity limits are tested and calculated to determine optimal node sizes.
 
@@ -411,7 +526,7 @@ Capacity limits are tested and calculated to determine optimal node sizes.
 
 ---
 
-## 18. Backup & Disaster Recovery
+## 20. Backup & Disaster Recovery
 
 Backup pipelines ensure data persistence and quick disaster recovery times.
 
@@ -424,35 +539,35 @@ Backup pipelines ensure data persistence and quick disaster recovery times.
 
 ---
 
-## 19. Trade-offs & Design Decisions
+## 21. Trade-offs & Design Decisions
 
-### 19.1. RabbitMQ over Kafka
+### 21.1. RabbitMQ over Kafka
 *   *Pros:* Simple task routing, native priority queue support, and low overhead for low-volume dispatches.
 *   *Cons:* Lacks message replay capabilities and cannot scale as efficiently as Kafka under massive data logging requirements.
 *   *Failure Point:* High queue depth can exhaust RabbitMQ RAM, triggering resource alarms that pause publishers.
 
-### 19.2. PostgreSQL RLS over Schema-per-Tenant
+### 21.2. PostgreSQL RLS over Schema-per-Tenant
 *   *Pros:* Simplified database migrations (run once globally) and high connection pool efficiency.
 *   *Cons:* Extremely large tenants cannot be easily sharded without database sharding frameworks (e.g. Citus).
 *   *Failure Point:* Heavy analytical queries from one tenant can lock table rows, affecting database performance for other tenants.
 
-### 19.3. FastAPI over Go/Node.js
+### 21.3. FastAPI over Go/Node.js
 *   *Pros:* Native asynchronous support (`asyncio`), fast development cycles, and native integration with Python's AI/Machine Learning packages (Ollama, LangChain).
 *   *Cons:* Python is single-threaded and has lower performance for CPU-bound tasks compared to Go.
 *   *Failure Point:* Long CPU-bound routing calculations block the event loop, causing API timeouts.
 
 ---
 
-## 20. Data Consistency & Transaction Strategy
+## 22. Data Consistency & Transaction Strategy
 
-### 20.1. Outbox Pattern
+### 22.1. Outbox Pattern
 To prevent failures where a database write succeeds but the RabbitMQ message queue dispatch fails (or vice versa), the system uses the **Transactional Outbox Pattern**:
 1.  **Atomic Write:** When a campaign is approved, the API writes both the campaign state and a dispatch event to an `outbox` table in a single SQL transaction.
 2.  **Outbox Poller:** A background daemon polls the `outbox` table, publishes the message to RabbitMQ, and marks the event as completed in the database.
 
 ---
 
-## 21. Testing Strategy
+## 23. Testing Strategy
 
 *   **Unit Tests:** Tests API routers and worker task logic using mocked external service boundaries.
 *   **Integration Tests:** Validates database RLS policies and RabbitMQ routing logic using **Testcontainers** to spin up clean instances of Postgres, Redis, and RabbitMQ.
@@ -460,11 +575,11 @@ To prevent failures where a database write succeeds but the RabbitMQ message que
 
 ---
 
-## 22. Operational SLA, Lifecycle & Release Governance
+## 24. Operational SLA, Lifecycle & Release Governance
 
 This section establishes the operational commitments, data lifecycle automation, release strategies, and edge security boundary controls.
 
-### 22.1. SLO & SLA Definition
+### 24.1. SLO & SLA Definition
 To ensure system-wide performance and reliability, the platform commits to the following metrics:
 *   **API Availability Target (SLA):** 99.9% uptime per billing cycle (excluding scheduled maintenance windows).
 *   **Email Delivery Latency Targets (SLO):**
@@ -472,17 +587,17 @@ To ensure system-wide performance and reliability, the platform commits to the f
     *   *Campaign Bulk Path:* p95 latency $< 15$ minutes to complete dispatch for lists under 100,000 recipients.
 *   **Error Budget:** 0.1% monthly failure rate limit on API requests before trigger alerts escalate to critical engineering channels.
 
-### 22.2. Data Lifecycle & Retention Management
+### 24.2. Data Lifecycle & Retention Management
 *   **Telemetry Retention Window:** Hot database storage (`email_events` partition tables) is kept for exactly **90 days**.
 *   **Archival Pipeline:** On the 1st of every month, a background job extracts, compresses, and archives partitions older than 90 days to AWS S3 Glacier (Cold Storage) in Apache Parquet format. Once verified, the SQL partition is dropped to maintain small, efficient primary database indexes.
 *   **GDPR Hard-Purges:** Contacts marked for deletion are soft-deleted for a 30-day recovery grace period. At 30 days, a background worker runs anonymization queries, stripping PII but retaining aggregate stats.
 
-### 22.3. Migration & Versioning Strategy
+### 24.3. Migration & Versioning Strategy
 *   **Database Schema Versioning:** Managed via Alembic migrations.
 *   **Zero-Downtime Migration Rule:** Database updates must remain backward compatible. Table renames and column deletions are forbidden. New columns must be added as nullable or with a default value. Truncates or modifications are split across two deployment cycles (Expand $\rightarrow$ Deploy $\rightarrow$ Contract).
 *   **API Versioning:** Enforces URI routing prefixes (`/api/v1`, `/api/v2`). When an endpoint is deprecated, the API gateway appends a `Warning: 299 Deprecated` header to responses for a 6-month grace window.
 
-### 22.4. Feature Flags & Safe Releases
+### 24.4. Feature Flags & Safe Releases
 *   **Gradual Rollouts:** Enforced via a Redis-backed feature flag cache. Features are dynamically checked against tenant identities:
     ```python
     if redis.sismember("feature:clicks:enabled", tenant_id):
@@ -490,8 +605,6 @@ To ensure system-wide performance and reliability, the platform commits to the f
     ```
 *   **Global Kill Switches:** System-heavy endpoints (e.g., local AI generation and PDF exports) are wrapped in global switches. In the event of a CPU or database bottleneck, operations can instantly deactivate these integrations platform-wide.
 
-### 22.5. Edge Security & Web Application Firewall (WAF)
+### 24.5. Edge Security & Web Application Firewall (WAF)
 *   **WAF & CDN Boundary:** Cloudflare or AWS CloudFront caches static client bundles, template assets, and icons at the edge, shielding API origins from redundant asset traffic.
 *   **DDoS Mitigation:** Implements rate-limiting and IP scrubbing rules at the edge gateway to intercept brute force logins, malicious bots, and transaction-flooding attempts before requests hit the FastAPI gateway nodes.
-
-

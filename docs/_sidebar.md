@@ -10,6 +10,8 @@
 
 * **Architecture & Operations**
   * [Delivery Engine](advanced/deliverability-engine.md)
+  * [High-Level Design](system_design/high_level_design.md)
+  * [Low-Level Design SOP](system_design/low_level_designs/README.md)
   * [AI & RAG Intelligence](advanced/ai-rag-architecture.md)
   * [Webhooks & Events](advanced/webhooks.md)
   * [RBAC & Security](advanced/rbac-security.md)
