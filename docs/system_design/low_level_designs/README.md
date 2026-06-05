@@ -1,74 +1,15 @@
-# Low-Level Design (LLD) SOP & Guidelines
+# Low-Level Design (LLD) Specifications & Component Index
 
-This directory (`/docs/system_design/low_level_designs/`) is the central repository for all component-level Low-Level Designs (LLDs). This document outlines **why** LLDs are crucial for developer operations, **where** to place them, and **how** to write them using a standardized template.
+This register serves as the central index and architectural repository for all component-level Low-Level Designs (LLDs) of the **ShrFlow** platform. 
 
----
+Every component listed in the index below contains a detailed, low-level engineering specification outlining:
 
-## 1. Why is this useful for developers?
-
-Developing without an LLD often leads to code rewrites, database contamination, and integration bottlenecks. Creating an LLD *before* writing code provides:
-
-1.  **Zero Coding Ambiguity:** Developers know the exact function signatures, database columns, and validation schemas beforehand, avoiding guesswork.
-2.  **Architectural Alignment:** Enforces design patterns (e.g., Outbox pattern, Strategy pattern) consistently across the codebase.
-3.  **Faster & Objective Code Reviews:** Pull Requests (PRs) are reviewed against the pre-approved LLD spec, eliminating opinion-based review loops.
-4.  **Instant Developer Onboarding:** A new engineer can read the LLD for a component (e.g., `ai_rag_inference.md`) and immediately understand how the classes, databases, and APIs fit together without reverse-engineering the code.
-
----
-
-## 2. Where to add LLDs?
-
-Create individual Markdown files under this directory, named after the feature from the **Features Inventory**:
-*   *Path:* `/docs/system_design/low_level_designs/<feature_name>.md`
-*   *Examples:*
-    *   `/docs/system_design/low_level_designs/contacts_ingestion_worker.md`
-    *   `/docs/system_design/low_level_designs/outbox_transaction_manager.md`
-    *   `/docs/system_design/low_level_designs/local_mcp_rag_inference.md`
-
-Make sure to link new LLD files in the main index of this document.
-
----
-
-## 3. How to create an LLD (Standard Developer Template)
-
-Every LLD document created under `/docs/system_design/low_level_designs/` must follow this structure:
-
-```markdown
-# Low-Level Design: [Feature Name]
-
-## 1. Objective & Scope
-Brief description of what this component executes and its operational boundaries.
-
-## 2. API Contract & Validation Schema
-*   **Endpoint:** `POST /api/v1/...`
-*   **Headers:** `Authorization: Bearer <JWT>`, `Idempotency-Key: <UUID>`
-*   **Request JSON Schema:**
-    ```json
-    {
-       "field_name": "string (constraints)"
-    }
-    ```
-*   **Response JSON Schema (Success / Error):** Details status codes (e.g., 200, 400, 429).
-
-## 3. Database Schema & Migration SQL
-Specify exact tables, column constraints, indexes, and RLS commands:
-```sql
-CREATE TABLE ...
-```
-
-## 4. Class Design & Component Interface
-Provide class skeletons, methods, parameters, return types, and design patterns:
-```python
-class FeatureManager:
-    async def execute_task(self, param: UUID) -> Result:
-        pass
-```
-
-## 5. Execution Logic (Pseudocode or Flow)
-Step-by-step logic detailing transaction boundaries, locking mechanisms, loops, and retries.
-
-## 6. Error & Recovery Matrix
-Define exceptions, log signals, and recovery actions.
-```
+1.  **Objective & Scope:** Core capabilities and bounds of the component.
+2.  **API Contract & Validation Schema:** Strict endpoint parameters, request/response formats, and headers.
+3.  **Database Schema & Migration SQL:** Exact tables, constraints, keys, indexes, and Row-Level Security (RLS) policies.
+4.  **Class Design & Component Interface:** Skeletons, class relationships, methods, and design patterns (e.g., Outbox, Strategy, Pooler).
+5.  **Execution Logic:** Step-by-step pseudo-code detailing locking mechanisms, loops, transaction boundaries, and state machines.
+6.  **Error & Recovery Matrix:** Specific exceptions, logging contexts, and fallback recovery paths.
 
 ---
 

@@ -6,6 +6,10 @@
 # Reference repositories (excluded per user request)
 reference_repos/
 notes.txt
+
+# Clent given pts
+client_ppts
+
 # Logs
 logs/
 *.log

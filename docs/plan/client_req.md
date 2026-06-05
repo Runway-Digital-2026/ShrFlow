@@ -1,280 +1,189 @@
-# Module 1: Data Uploading - Client Requirements & Research
+# ShrFlow — Client Requirements & Specifications (Core Modules & Accessibility)
 
-## Detailed Note
-Module 1 serves as the entry point for all contact data within the ShrFlow ecosystem. The primary goal is to provide a seamless, error-tolerant, and accessible interface for importing large datasets while ensuring data integrity. This module must handle various file formats, allow for flexible field mapping, and provide real-time validation feedback to the user.
-
----
-
-## TASK 01 — Platform Selection
-
-**Chosen Platform:** HubSpot
-**Team Name:** Team ShrFlow
-
-### Reasons for Selection:
-1. **Industry-Leading CRM Foundation:** HubSpot is built on a robust CRM core, making contact ingestion its most mature and well-tested feature.
-2. **Superior Mapping UX:** Their import wizard provides a highly intuitive interface for mapping CSV columns to internal properties, handling complex data types with ease.
-3. **Comprehensive Documentation:** HubSpot's developer documentation and API references are industry-standard, offering clear insights into their data validation and object-oriented architecture.
-
-### Platform Analysis:
-*   **Relevance:** HubSpot's import tool directly mirrors the requirements for Module 1, specifically handling multi-object imports and custom property mapping.
-*   **Accessibility:** HubSpot is committed to WCAG 2.1 compliance. Their import forms use ARIA labels, focus management, and provide clear text summaries of errors.
-*   **Market Position:** It is a leader in the SMB and Mid-Market SaaS space, serving users who need powerful tools that remain accessible without deep technical knowledge.
-*   **Developer Documentation:** They provide extensive REST API docs, including specialized endpoints for "Imports" which include status tracking and error reporting.
-*   **Feature Depth:** It goes beyond simple CSV uploads, offering data cleaning suggestions, duplicate detection, and advanced property type validation.
-
-> [!NOTE]
-> **Screenshot 1: HubSpot CRM Overview**
-> ![HubSpot CRM Landing](https://www.hubspot.com/hubfs/Import-Tool-UI.png)
-> *Caption: The HubSpot CRM interface showing the starting point for data ingestion. It highlights the focus on "Objects" (Contacts, Companies) as the foundation.*
+This document aggregates the client's functional specifications, product requirements, and technical expectations for the **ShrFlow** email operations platform. The requirements are compiled from the client briefings, modules, and accessibility guidelines.
 
 ---
 
-## TASK 02 — Platform Deep-Dive: Data Uploading
+## 1. System Architecture & SaaS Foundation
 
-### Analysis Points:
-1. **File Upload Interface:** A multi-step wizard. Users select the import type (File from computer), upload the file (Drag & Drop or Button), and then choose the object type (Contacts).
-2. **Supported File Types:** Supports `.csv`, `.xlsx`, and `.xls`. File size limit is up to 512MB for paid tiers, ensuring scalability for large lists.
-3. **Header Mapping:** Automatically matches spreadsheet headers to HubSpot properties. Users can manually override or create new properties on the fly.
-4. **Custom Field Creation:** Users can create custom properties (text, dropdown, checkbox, date, etc.) directly within the import flow if a matching field doesn't exist.
-5. **Validation:** Provides a "Preview" step. If errors exist (e.g., invalid email format), HubSpot generates an error file that users can download to fix and re-upload.
-6. **Accessibility:** Forms are keyboard-navigable. Error messages are programmatically linked to inputs using `aria-describedby`.
-7. **Online Record Creation:** Users can manually add a contact via a "Create Contact" sidebar form without needing to upload a file.
+The platform must operate as a modern, enterprise-grade, multi-tenant SaaS application.
 
-> [!IMPORTANT]
-> **Key Observation:** HubSpot's "Error File" strategy is a best practice. Instead of just failing, it gives the user a pre-formatted file containing only the rows that failed, with an extra column explaining why.
-
-> [!NOTE]
-> **Screenshot 2: File Upload Interface**
-> ![HubSpot Upload Flow](https://www.hubspot.com/hubfs/File-Upload-Step.png)
-> *Caption: The initial file selection screen supporting drag-and-drop for CSV and Excel files.*
-
-> [!NOTE]
-> **Screenshot 3: Header Mapping Screen**
-> ![HubSpot Mapping UI](https://www.hubspot.com/hubfs/Mapping-Screen.png)
-> *Caption: The mapping interface where spreadsheet columns are aligned with CRM properties.*
-
-> [!NOTE]
-> **Screenshot 4: Custom Property Creation**
-> ![HubSpot Property Builder](https://www.hubspot.com/hubfs/Property-Creation.png)
-> *Caption: The modal allowing users to create new data fields (text, dropdown, date) during the import process.*
+*   **Multi-Tenancy:** Single codebase serving multiple organizations (tenants). Every request must be tenant-aware with strict row-level isolation (RLS) or schema-level isolation in the primary database.
+*   **Decoupled Worker Pool:** Background job processing (queues + workers) is required for high-volume tasks such as CSV parsing, campaign dispatches, and analytic aggregations.
+*   **Core Technology Stack:**
+    *   **Backend:** FastAPI (Python) or Node.js (TypeScript) — executing asynchronous workloads.
+    *   **Frontend:** React (Next.js) + TypeScript, styled with Tailwind CSS or Chakra UI.
+    *   **Primary Database:** PostgreSQL (storing metadata, lists, templates, logs, and metrics).
+    *   **Caching & Rates:** Redis (for session caching, rate-limiting, and scheduler locks).
+    *   **Message Broker:** RabbitMQ, AWS SQS, or Google Pub/Sub.
+*   **Security & Compliance:**
+    *   Encryption-at-rest for databases, backups, and object storage.
+    *   Encryption-in-transit (HTTPS everywhere, TLS, HSTS).
+    *   Audit logging of sensitive actions (admin activities, role adjustments, bulk data exports).
+    *   Region-aware data residency (e.g., storing EU tenant data within EU regions).
 
 ---
 
-## TASK 03 — Tech Stack Mapping
+## 2. Module 1: Data Ingestion & Field Management
 
-| Layer | Platform (HubSpot Inferred) | Project Stack (ShrFlow) |
-| :--- | :--- | :--- |
-| **File Parsing** | Java (Apache POI) / Python | Python (Pandas + Openpyxl) |
-| **Frontend** | React + TypeScript + Sass | React + TypeScript + Tailwind CSS |
-| **Form Builder UI** | Custom React Components | React + Radix UI / Headless UI |
-| **Validation** | Server-side (Java/Dropwizard) | Client: Zod / RHF | Server: Pydantic |
-| **Backend** | Java (Dropwizard) / Python | Python (FastAPI / Celery) |
-| **Database** | MySQL (Vitess) / Elasticsearch | PostgreSQL (Row-level isolation) |
-| **Storage** | AWS S3 | AWS S3 |
-| **Auth** | OAuth2 + Custom RBAC | JWT + Clerk / AWS Cognito |
+Module 1 establishes the system's data foundation, acting as the primary repository for audience data.
 
----
+### 2.1. File Ingestion Pipeline
+*   **Supported File Types:** CSV, XLS (Excel 97-2003), and XLSX (Modern Excel).
+*   **Upload Methods:** The UI must provide a file browser button alongside drag-and-drop. Drag-and-drop must *never* be the only option, as it is inaccessible to keyboard-only users.
+*   **Dirty Data Handlers:** The ingestion worker must automatically clean common spreadsheet issues:
+    *   Skipping leading blank rows.
+    *   Handling merged header cells.
+    *   Normalizing mixed date formats.
+    *   Stripping extraneous white spaces.
+    *   Converting numeric fields stored as text back to numbers.
+*   **Ingestion Preview:** Display a read-only preview of the first 5 rows of the parsed file to allow users to verify mapping before committing the import.
 
-## TASK 04 — Gap Analysis
+### 2.2. Custom Fields & Typing
+Users must be able to define custom properties dynamically. The system must support the following 8 core field types:
+1.  **Text:** For names, custom labels, and descriptors.
+2.  **Email:** Must be verified against standard formatting constraints (`name@domain.ext`).
+3.  **Phone Number:** Cleaned to digits only; must enforce valid length formats.
+4.  **Date:** Validated against recognizable date formats (e.g., YYYY-MM-DD).
+5.  **Radio Buttons:** For mutually exclusive selections.
+6.  **Dropdowns:** Selected from a pre-defined set of values.
+7.  **Multi-select Checkboxes:** For tag lists or multiple attributes.
+8.  **Created Date:** Auto-populated by the system on import/creation (defaulting to current date).
 
-| Required Feature | HubSpot Has It? | Notes / Gap Description |
-| :--- | :--- | :--- |
-| Upload CSV, XLS, XLSX | Yes | Full support with large file handling. |
-| Clean header validation | Yes | Auto-mapping with confidence scores. |
-| Custom field creation | Yes | Supports wide range of types including "Calculated" fields. |
-| Header mapping UX | Yes | Column-by-column mapping with data preview. |
-| Online record creation | Yes | Sidebar quick-add and full form add. |
-| Server/Client validation | Yes | Real-time email format check + server-side schema check. |
-| Accessible file input | Yes | High-contrast drag-and-drop zones. |
-| Auto-populated "Created Date" | Yes | System field `hs_createdate` is auto-set. |
-
-### Summary of Key Gaps:
-While HubSpot is comprehensive, its complexity can be overwhelming for simple use cases. ShrFlow will focus on a **"Mapping-First"** approach where the preview is interactive. HubSpot's error handling requires downloading a file; ShrFlow intends to implement **Inline Error Correction** for small datasets to improve UX speed.
-
----
-
-## TASK 05 — Module Design Plan
-
-### A. Component Breakdown
-*   **FileUploadZone:** Reusable drag-and-drop component with progress tracking.
-*   **MappingMatrix:** Interactive table for column-to-property mapping.
-*   **PropertyCreationModal:** Pop-up to define new fields on the fly.
-*   **ImportSummary:** Post-import dashboard showing success/fail counts.
-*   **ContactQuickAdd:** Small, reusable form for manual entry.
-
-### B. API Design Sketch
-*   `POST /v1/imports/upload`: Receives file, returns temporary `file_id`.
-*   `GET /v1/imports/:file_id/preview`: Returns first 5 rows for mapping.
-*   `POST /v1/imports/:file_id/map`: Submits mapping configuration.
-*   `POST /v1/properties`: Creates a new custom field definition.
-*   `GET /v1/imports/:id/status`: Polls status of background processing job.
-
-### C. Accessibility Plan (WCAG 2.1 AA)
-1. **Focus Management:** Ensure focus returns to the "Upload" button after a modal closes.
-2. **Live Regions:** Use `aria-live="polite"` for upload progress updates.
-3. **Semantic HTML:** Use `<fieldset>` and `<legend>` for grouped form elements.
-4. **Contrast:** Maintain 4.5:1 ratio for all instruction text.
-5. **Screen Reader Testing:** Approach includes manual audits using **VoiceOver (macOS)** and **NVDA (Windows)** to ensure table headers in the mapping UI are correctly announced.
-6. **Programmatic Error Linking:** All validation errors will use `aria-errormessage` or `aria-describedby` to link the error text to the specific input field.
-
-### D. Integration Points
-*   **Module 2 (Email Creation):** Provides the "Recipient List" selected from uploaded data.
-*   **Module 4 (Email Sending):** Consumes the "Validated Email" field from Module 1.
-*   **Module 5 (Reporting):** Tracks "Import Source" as a dimension for campaign analytics.
+### 2.3. Data Validation & Error Feedback
+*   **Validation Rules:** Enforce schema checks on field types (e.g., email syntax, mandatory fields, dropdown option matches).
+*   **Actionable Errors:** Error reporting must tell the user exactly which row and field failed, why it failed, and provide an example of a valid format.
+    *   *Bad Error:* "Invalid data in row 4."
+    *   *Good Error:* "Row 4, Email column: 'ravi@' is missing a domain name. Please use a format like 'ravi@gmail.com'."
+*   **Manual Entry:** Provide a fully keyboard-accessible form for adding single contacts manually without uploading a file.
 
 ---
 
-## Implementation Tasks
+## 3. Module 2: Email Creation Studio
 
-- [ ] Setup S3 bucket for temporary file storage.
-- [ ] Implement Pandas-based file parser in FastAPI.
-- [ ] Build Drag-and-Drop UI with `react-dropzone`.
-- [ ] Create Dynamic Mapping UI (Radix Table + Select).
-- [ ] Implement Background Worker (Celery/Redis) for large imports.
-- [ ] Conduct Screen Reader audit on mapping form.
+Module 2 represents the visual editor where users design and compose email campaigns.
 
----
----
+### 3.1. Formatting & Layout Controls
+*   **Rich Text Canvas:** Provide options to alter font face, font size, bold, italics, underline, text color, alignment, line spacing, indentation, subscripts, superscripts, list formats (numbered and bulleted), links, emojis, and inline images.
+*   **Template Support:** Render structured, responsive layout sections. Use MJML or React Email to compile the design canvas into HTML that is compatible with older desktop clients (such as Outlook) and modern mobile clients.
 
-# Module 2: Email Creation - Client Requirements & Research
+### 3.2. Personalization & AI Assistants
+*   **Merge Tokens:** Allow inserting dynamic tokens (e.g., `{{first name}}` or custom fields like `{{city}}`) which are replaced with recipient data during sending.
+*   **AI Writing Panel:** Provide integration with a LLM (OpenAI/Anthropic) to:
+    *   Suggest high-converting subject lines based on body content.
+    *   Improve tone, refine grammar, or rephrase selections.
+    *   Adjust paragraph length (expand or shorten).
+    *   *Constraint:* The AI panel must never directly alter the editor canvas without explicit user approval (accept/reject controls).
 
-## Detailed Note
-Module 2 is the creative engine of ShrFlow. It must provide a powerful yet accessible environment for users to design high-converting email campaigns. The editor needs to balance the flexibility of a rich-text environment with the structural integrity required for responsive email HTML. Integration with Module 1 is critical for dynamic personalization via merge tokens.
-
----
-
-## TASK 01 — Platform Selection
-
-**Chosen Platform:** HubSpot
-**Team Name:** Team ShrFlow
-
-### Reasons for Selection:
-1. **Dynamic Personalization Synergy:** HubSpot’s editor is natively tied to its CRM properties, providing a blueprint for how Module 2 should consume data from Module 1.
-2. **Built-in Accessibility Guardrails:** It includes real-time accessibility checking (alt-text reminders, contrast warnings) which is a core requirement for our project.
-3. **Advanced AI Integration:** Their "Breeze AI" content assistant sets a high bar for generative text and subject line optimization within the email workflow.
-
-### Platform Analysis:
-*   **Relevance:** Directly addresses the need for a WYSIWYG editor that handles templates and dynamic tokens.
-*   **Accessibility:** Offers documented WCAG 2.1 compliance features, including automated checks for image alt text and link descriptive text.
-*   **Market Position:** Dominates the "All-in-One" Marketing automation space for Mid-Market firms.
-*   **Developer Documentation:** Provides clear APIs for managing email templates and rendering content via their design system (Canvas).
-*   **Feature Depth:** Includes multi-variant testing, content optimization, and a drag-and-drop module system that goes beyond basic rich text.
-
-> [!NOTE]
-> **Screenshot 1: HubSpot Email Editor Interface**
-> ![HubSpot Email Editor](https://www.hubspot.com/hubfs/Email-Editor-UI.png)
-> *Caption: The HubSpot Drag-and-Drop editor showing the modular blocks on the left and the live canvas in the center.*
+### 3.3. Accessibility Obligations
+The editor must satisfy two distinct accessibility requirements:
+1.  **Editor UI Accessibility (For Creators):**
+    *   All toolbar actions must have text labels or descriptive `aria-label` tags (icons alone are prohibited).
+    *   Modals (image uploads, link insertions) must trap keyboard focus.
+    *   The token dropdown must use a searchable ARIA combobox pattern.
+2.  **Email Output Accessibility (For Recipients):**
+    *   Generate a single `<h1>` tag per email.
+    *   Enforce structured heading hierarchy (headings cannot skip levels, e.g., `<h1>` directly to `<h3>` is blocked).
+    *   Force alternative text input for uploaded images (with a "This image is decorative" checkbox option that sets `alt=""`). Warn users before saving if alt text is missing.
+    *   Flag generic link text (e.g., "click here", "read more") and suggest descriptive phrases.
+    *   Prevent using raw bullet characters (e.g., `•`) for lists; they must compile to semantic `<ul>`/`<ol>` tags.
+    *   Check contrast ratios to ensure text-to-background contrast is $\ge$ 4.5:1.
 
 ---
 
-## TASK 02 — Platform Deep-Dive: Email Creation
+## 4. Module 3: Email Rendering & Pre-Send Validation
 
-### Analysis Points:
-4. **Editor Type:** Primarily a **Drag-and-Drop builder** with nested **TinyMCE-powered WYSIWYG** text modules. It offers a "Visual" mode and a "Plain Text" mode.
-5. **Formatting Toolbar:** Comprehensive options: Font selection (standard + web safe), size, B/I/U, text/background color, alignment, line spacing, bullet/numbered lists, subscript/superscript, link insertion, and emoji picker.
-6. **Personalization Tokens:** Users can insert tokens like `{{ contact.firstname }}`. These are directly mapped to the CRM property database.
-7. **AI Features:** "Breeze AI" allows users to highlight text and click "Refine" to shorten, lengthen, or change tone. It also generates subject line suggestions based on body content.
-8. **Template System:** Large library of pre-built, goal-oriented templates (e.g., Newsletters, Promotions). Users can save custom layouts as new templates.
-9. **HTML Output:** HubSpot uses a proprietary rendering engine to ensure 99% compatibility across Outlook, Gmail, and Apple Mail. It handles mobile responsiveness via automated fluid layouts.
-10. **Accessibility in Editor:** The "Check" tool flags missing alt text for images, low color contrast, and broken links before the user can publish.
+Module 3 acts as the quality assurance layer, validating layouts and accessibility before dispatch.
 
-> [!NOTE]
-> **Screenshot 2: Formatting Toolbar**
-> ![HubSpot Toolbar](https://www.hubspot.com/hubfs/Email-Toolbar.png)
-> *Caption: The rich-text formatting toolbar showing typography, alignment, and link controls.*
+### 4.1. Email Previews
+*   **Responsive Layout Toggle:** Render in-app previews for Desktop (600px width) and Mobile (375px width).
+*   **Client Rendering Simulator:** Simulate rendering across major email clients to catch client-specific issues (e.g., Outlook rendering glitches, image blocking, CSS strip rules).
+    *   *Required Clients:* Gmail (Web & App), Outlook (Windows Desktop), Apple Mail (macOS & iOS), and Yahoo Mail.
 
-> [!NOTE]
-> **Screenshot 3: Personalization Token Picker**
-> ![HubSpot Tokens](https://www.hubspot.com/hubfs/Token-Picker.png)
-> *Caption: The dropdown interface for inserting dynamic CRM properties into the email body.*
-
-> [!NOTE]
-> **Screenshot 4: AI Content Assistant**
-> ![HubSpot AI Sidepanel](https://www.hubspot.com/hubfs/AI-Assistant.png)
-> *Caption: The Breeze AI sidebar offering text refinement and subject line generation.*
-
-> [!NOTE]
-> **Screenshot 5: Accessibility Checker**
-> ![HubSpot Accessibility tool](https://www.hubspot.com/hubfs/Accessibility-Check.png)
-> *Caption: The real-time audit panel highlighting WCAG violations like missing alt-text.*
+### 4.2. Quality Control & Test Sends
+*   **Test Dispatch:** Provide a tool to send a live test campaign to up to 5 real email addresses. Displays a "Sending..." loader and returns specific error messages on failure.
+*   **Integrated Checklist:** Prior to activation, run an automated scan that scores items as PASS, WARN, or FAIL:
+    *   **FAIL (Blocks Sending):** Missing image alt text, color contrast below 4.5:1, or broken links.
+    *   **WARN (Warnings/Reminders):** Missing preview text, non-descriptive links ("click here"), missing unsubscribe links, or skipped heading levels.
+    *   **PASS:** Valid subject line, correct headers, valid lang attribute.
+*   **Checklist UI Accessibility:** Must use text alongside icons for status indications (never rely on color alone). Results must be announced to screen readers via `aria-live`. The "Send Campaign" button must remain disabled until all FAIL items are resolved.
 
 ---
 
-## TASK 03 — Tech Stack Mapping
+## 5. Module 4: Campaign Dispatch & Scheduling
 
-| Layer | Platform (HubSpot Inferred) | Project Stack (ShrFlow) |
-| :--- | :--- | :--- |
-| **Frontend** | React + TypeScript | React + TypeScript + Tailwind CSS |
-| **Editor Library** | TinyMCE (Customized) | Tiptap (ProseMirror based) |
-| **Template Engine** | Proprietary Canvas Rendering | MJML (via Node.js/Python) |
-| **AI Integration** | Breeze AI (OpenAI/Internal) | OpenAI API (GPT-4o) |
-| **Token Engine** | Java-based String Template | Custom Regex/Handlebars Parser |
-| **Backend** | Java (Dropwizard) | Python (FastAPI) |
-| **Storage** | Amazon S3 | Amazon S3 |
-| **Auth** | JWT / Session | JWT + RBAC |
+Module 4 executes email campaigns safely and manages sending profiles.
 
----
+### 5.1. Sender Profiles & Domain Verification
+*   **Sender Parameters:** Define a Sender Name (e.g., "Priya from The Store") and a Sender Email (e.g., `priya@yourdomain.com`).
+*   **Verification:** Prevent campaigns from using unverified domains. Guide users through configuring SPF, DKIM, and DMARC records to establish sending trust.
+*   **Deliverability Wizard:** Display copy-paste values for DNS configuration (TXT/CNAME records) and offer an automated checker to verify propagation.
 
-## TASK 04 — Gap Analysis
+### 5.2. Subject Lines & Preview Snips
+*   **Subject Fields:** Custom inputs supporting merge tokens and emojis. Include a character counter highlighting the ideal length (40–60 characters).
+*   **Preview Text:** Enable custom snippet configuration to replace default "view in browser" text in inbox apps.
 
-| Required Feature | HubSpot Has It? | Notes / Gap Description |
-| :--- | :--- | :--- |
-| Rich text editor | Yes | Full TinyMCE integration. |
-| Font color/spacing | Yes | Extensive typography controls. |
-| Lists (Bulleted/Num) | Yes | Standard UI support. |
-| Subscript/Superscript | Yes | Available in the "More" toolbar menu. |
-| Link insertion | Yes | Includes "Open in new window" and "No-follow" options. |
-| Emoji picker | Yes | Native OS-style picker. |
-| Image upload w/ Alt text | Yes | Required field in the image module sidebar. |
-| File attachment | Yes | Via the "Document" tool integration. |
-| Personalization tokens | Yes | Directly linked to CRM (Module 1). |
-| AI content generation | Yes | High-quality text and image generation. |
-| WCAG 2.1 AA Editor | Yes | Built-in "Accessibility Check" sidebar. |
-| Responsive HTML output | Yes | Automated fluid grid rendering. |
-
-### Summary of Key Gaps:
-HubSpot’s editor is heavily modular, which can make it difficult to do "pure" free-form HTML editing without using their Developer File Manager. ShrFlow will aim to bridge this by using **Tiptap**, allowing for a more fluid text-first experience that still outputs structured, responsive **MJML-based HTML**.
+### 5.3. Scheduling & Review
+*   **Send Controls:** Support immediate sending or scheduled dispatches (Date + Time + Time Zone).
+*   **Accessible Scheduling Forms:** Date input fields must allow manual text entry (DD/MM/YYYY) as an alternative to clicking through calendar widgets. Time zones must be selected using a searchable combobox.
+*   **Pre-Send Review Matrix:** A detailed review table showing all settings:
+    *   Sender details, verified status, subject length, and preview text.
+    *   Target recipient lists and the total combined recipient count.
+    *   Scheduled execution time.
+    *   *Requirement:* Each row in the summary must contain an "Edit" link to navigate back to that step. The "Confirm Send" button must dynamically state the total recipient count (e.g., "Confirm Send to 12,847 Recipients").
 
 ---
 
-## TASK 05 — Module Design Plan
+## 6. Module 5: Analytics, Telemetry & Webhook Reporting
 
-### A. Component Breakdown
-*   **EmailEditorCanvas:** The primary Tiptap-based editing surface.
-*   **FormattingToolbar:** Floating/Fixed toolbar with all typography and alignment controls.
-*   **TokenDropdown:** A searchable list of fields (mapped from Module 1) that inserts `{{ field_name }}`.
-*   **AIContentSidebar:** A dedicated panel for "Generate from Prompt" and "Improve Text" features.
-*   **MJMLRenderer:** A backend-linked utility to convert JSON editor state to mobile-responsive HTML.
-*   **AccessibilityAuditPanel:** Real-time list of WCAG violations in the current draft.
+Module 5 tracks campaign performance and provides reports.
 
-### B. API Design Sketch
-*   `GET /v1/templates`: List available system and user templates.
-*   `POST /v1/ai/generate-copy`: Sends prompt to LLM, returns suggested content.
-*   `POST /v1/ai/subject-lines`: Returns 5 suggested subject lines based on body.
-*   `POST /v1/emails/preview`: Returns a rendered HTML string for browser display.
-*   `GET /v1/fields/tokens`: Fetches available property names from Module 1 for the token picker.
+### 6.1. Core Analytics Metrics
+Every campaign report dashboard must track and compute:
+*   **Dispatched (Sent):** Total emails sent.
+*   **Delivered:** Accepted by receiving servers.
+*   **Opened:** Detected via image tracking pixel.
+*   **Clicked:** Tracked via link redirect wrappers.
+*   **Bounced:** Categorized into:
+    *   *Hard Bounces (Permanent):* Typos, closed domains. These must be added to a suppression list immediately to stop further dispatches.
+    *   *Soft Bounces (Temporary):* Full mailboxes, temporary timeouts. The system will retry sending. If an address soft-bounces 3 consecutive times, it is converted to a hard bounce.
+*   **Calculation Rates:**
+    *   $\text{Delivery Rate} = (\text{Delivered} / \text{Sent}) \times 100$
+    *   $\text{Open Rate} = (\text{Opened} / \text{Delivered}) \times 100$
+    *   $\text{Click Rate} = (\text{Clicked} / \text{Delivered}) \times 100$
 
-### C. Accessibility Plan (WCAG 2.1 AA)
-11. **ARIA Labels:** All toolbar buttons must have descriptive `aria-label` values.
-12. **Keyboard Traps:** Ensure the emoji picker and token dropdown can be escaped with `Esc`.
-13. **Screen Reader Feedback:** Use `aria-live` to announce AI generation status.
-14. **Focus Management:** Tab order must flow logically from toolbar to canvas to sidebar.
-15. **Screen Reader Testing:** Use **NVDA** and **VoiceOver** to verify that the virtual cursor correctly navigates the Tiptap canvas and announces formatting states (e.g., "Bold").
-16. **Programmatic Error Linking:** Ensure the `AccessibilityAuditPanel` links each error to the specific node in the editor for quick navigation.
+### 6.2. Heatmaps & Telemetry
+*   **Click Heatmap:** Visual representation overlay showing engagement metrics across links and visual blocks.
+*   **Time-on-Email:** Track engagement duration proxies based on telemetry pings from the client.
 
-### D. Integration Points
-*   **Module 1 (Data Uploading):** Source for all personalization tokens (First Name, Custom Fields).
-*   **Module 3 (Email Testing):** Receives the rendered HTML for multi-client previewing.
-*   **Module 4 (Email Sending):** Receives the final HTML and subject line for delivery.
-*   **Module 5 (Reporting):** Receives template IDs to track performance by design style.
+### 6.3. Report UI & Chart Accessibility
+*   **Accessible Colors:** Use color-blind friendly scales (e.g., Blue-to-Orange) instead of standard Red-to-Green indicators. Never use color intensity alone to convey engagement levels on the heatmap.
+*   **Keyboard Charts:** Enable navigation of chart data points (bars, line nodes) using the keyboard.
+*   **Data Table Fallback:** Every visual representation (bar chart, line graph, click heatmap) must feature a "View as Table" toggle that displays the data in a clean, semantic HTML table.
+*   **Table Formatting:** Tables must use captions, bold headers (`<th>`), explicit empty cell labels ("0" or "N/A"), and avoid merged cells.
 
 ---
 
-## Implementation Tasks
+## 7. Accessibility Compliance Framework (WCAG 2.1 AA & ARIA)
 
-- [ ] Initialize Tiptap with `StarterKit` and custom `Token` extension.
-- [ ] Implement MJML conversion service in the backend.
-- [ ] Integrate OpenAI GPT-4o for the `AIContentSidebar`.
-- [ ] Create a "Merge Tag" node for Tiptap to prevent users from accidentally deleting partial tokens.
-- [ ] Build a "Responsive Preview" toggle (Desktop/Mobile).
-- [ ] Implement an "Accessibility Check" function that scans the DOM for missing alt attributes.
+The entire application must meet WCAG 2.1 Level AA compliance.
+
+### 7.1. Structural Rules
+*   Every page must feature a unique, descriptive `<title>` tag.
+*   Structure headings sequentially (`<h1>` $\rightarrow$ `<h2>` $\rightarrow$ `<h3>`) without skipping levels.
+*   Declare language properties on the root container (`<html lang="en">`).
+
+### 7.2. Forms & Inputs
+*   Every input element must have a corresponding, programmatically linked `<label>` (placeholders are not a substitute for labels).
+*   Flag mandatory fields with `aria-required="true"`.
+*   Link error text directly to input elements using `aria-describedby` or `aria-errormessage`. Do not denote errors with color borders alone.
+
+### 7.3. Keyboard & Focus Control
+*   The entire portal must be navigable using the keyboard alone (`Tab`, `Shift+Tab`, `Enter`, `Space`, `Escape`, `Arrow keys`).
+*   Ensure focus rings are highly visible across all elements.
+*   **Focus Trapping:** When a dialog/modal is opened, lock keyboard focus inside the modal. Do not let focus escape to background elements. Pressing `Escape` must close the modal and return focus back to the button that triggered it.
+*   Provide a "Skip to main content" link at the very top of each page, hidden until focused.
+
+### 7.4. Color & Contrast Ratios
+*   Maintain a contrast ratio of at least **4.5:1** for standard body text, and **3:1** for large text (bold 18pt or larger) and UI control states.
+*   Never rely on color alone to communicate information. Always accompany color codes with textual labels or distinct icons.

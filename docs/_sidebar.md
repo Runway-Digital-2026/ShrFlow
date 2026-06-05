@@ -8,10 +8,12 @@
   * [Domain Verification](getting-started/verify-domain.md)
   * [First Campaign](getting-started/first-campaign.md)
 
+* **System Design**
+  * [High-Level Design](system_design/high_level_design.md)
+  * [Low-Level Designs](system_design/low_level_designs/README.md)
+
 * **Architecture & Operations**
   * [Delivery Engine](advanced/deliverability-engine.md)
-  * [High-Level Design](system_design/high_level_design.md)
-  * [Low-Level Design SOP](system_design/low_level_designs/README.md)
   * [AI & RAG Intelligence](advanced/ai-rag-architecture.md)
   * [Webhooks & Events](advanced/webhooks.md)
   * [RBAC & Security](advanced/rbac-security.md)
@@ -35,8 +37,8 @@
 
 * **Internal Planning**
   * [Planning Hub](plan/README.md)
+  * [Client Requirements](plan/client_req.md)
   * [Strategic Overview](plan/overview.md)
   * <a href="https://github.com/runway-digital-2026/ShrFlow/blob/main/docs/plan/phase_wise_plan.md" target="_blank" rel="noopener">Phase Roadmap</a>
-  * [Client Requirements](plan/client_req.md)
   * [Phase Library](plan/phases/README.md)
   * [Audit Library](plan/audits/README.md)
